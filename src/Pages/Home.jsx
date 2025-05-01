@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import MovieCard from "../components/MovieCard";
 import { ChevronLeftIcon, ChevronRightIcon, StarFilledIcon, ClockIcon } from "@radix-ui/react-icons";
 import { useRef, useEffect, useState } from "react";
@@ -87,9 +87,9 @@ function Home() {
         setSearchResults([]);
         return;
       }
-      
+
       setLoading(prev => ({ ...prev, search: true }));
-      
+
       try {
         const results = await searchMovies(searchTerm);
         setSearchResults(results);
@@ -100,19 +100,11 @@ function Home() {
         setLoading(prev => ({ ...prev, search: false }));
       }
     };
-    
+
     // Debounce search to avoid too many API calls
     const timeoutId = setTimeout(performSearch, 500);
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);
-
-  // Handle search form submission
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const query = formData.get("query");
-    setSearchParams({ search: query });
-  };
 
   // Scroll handlers for horizontal scrolling
   const scroll = (ref, direction) => {
@@ -143,7 +135,6 @@ function Home() {
 
   return (
     <div className="bg-gray-900 min-h-screen text-white py-8 px-4 md:px-8">
-      {/* Hero Section with Search Bar */}
       <div className="mb-12 text-center">
         <h1 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent mb-3">
           Discover Amazing Movies
@@ -151,31 +142,7 @@ function Home() {
         <p className="text-gray-400 max-w-2xl mx-auto mb-8">
           Your ultimate destination for exploring the best of cinema
         </p>
-        
-        {/* Enhanced Search Form */}
-        <div className="max-w-2xl mx-auto">
-          <form onSubmit={handleSearch} className="flex">
-            <input
-              type="text"
-              name="query"
-              placeholder="Search for movies..."
-              defaultValue={searchTerm}
-              className="w-full p-3 rounded-l-lg bg-gray-800 border-2 border-gray-700 focus:border-indigo-500 outline-none text-white transition duration-300"
-            />
-            <button 
-              type="submit" 
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 rounded-r-lg transition duration-300 flex items-center justify-center"
-            >
-              Search
-            </button>
-          </form>
-          <div className="mt-2 text-left flex justify-start gap-2 text-sm text-gray-400">
-            <span className="cursor-pointer hover:text-indigo-400" onClick={() => setSearchParams({ search: "action" })}>Action</span>
-            <span className="cursor-pointer hover:text-indigo-400" onClick={() => setSearchParams({ search: "comedy" })}>Comedy</span>
-            <span className="cursor-pointer hover:text-indigo-400" onClick={() => setSearchParams({ search: "drama" })}>Drama</span>
-            <span className="cursor-pointer hover:text-indigo-400" onClick={() => setSearchParams({ search: "sci-fi" })}>Sci-Fi</span>
-          </div>
-        </div>
+
       </div>
 
       {/* Search Results */}
@@ -202,26 +169,35 @@ function Home() {
         </div>
       )}
 
-      {/* Top Rated Section */}
       <div className="mb-12">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold flex items-center">
             <StarFilledIcon className="mr-2 text-yellow-400" />
             Top Rated Movies
           </h2>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => scroll(topRatedRef, 'left')}
-              className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+          <div className="flex items-center space-x-4">
+            {/* View All Button */}
+            <Link
+              to="/category/top_rated"
+              className="text-sm text-indigo-400 hover:text-indigo-300 transition"
             >
-              <ChevronLeftIcon className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => scroll(topRatedRef, 'right')}
-              className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
-            >
-              <ChevronRightIcon className="w-5 h-5" />
-            </button>
+              View All
+            </Link>
+            {/* Scroll Buttons */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => scroll(topRatedRef, 'left')}
+                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => scroll(topRatedRef, 'right')}
+                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+              >
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -251,19 +227,29 @@ function Home() {
             <span className="mr-2 text-orange-500">🔥</span>
             Popular Movies
           </h2>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => scroll(popularRef, 'left')}
-              className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+          <div className="flex items-center space-x-4">
+            {/* View All Button */}
+            <Link
+              to="/category/popular"
+              className="text-sm text-indigo-400 hover:text-indigo-300 transition"
             >
-              <ChevronLeftIcon className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => scroll(popularRef, 'right')}
-              className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
-            >
-              <ChevronRightIcon className="w-5 h-5" />
-            </button>
+              View All
+            </Link>
+            {/* Scroll Buttons */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => scroll(popularRef, 'left')}
+                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => scroll(popularRef, 'right')}
+                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+              >
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -293,19 +279,29 @@ function Home() {
             <ClockIcon className="mr-2 text-blue-400" />
             Upcoming Movies
           </h2>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => scroll(upcomingRef, 'left')}
-              className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+          <div className="flex items-center space-x-4">
+            {/* View All Button */}
+            <Link
+              to="/category/upcoming"
+              className="text-sm text-indigo-400 hover:text-indigo-300 transition"
             >
-              <ChevronLeftIcon className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => scroll(upcomingRef, 'right')}
-              className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
-            >
-              <ChevronRightIcon className="w-5 h-5" />
-            </button>
+              View All
+            </Link>
+            {/* Scroll Buttons */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => scroll(upcomingRef, 'left')}
+                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => scroll(upcomingRef, 'right')}
+                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
+              >
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
 

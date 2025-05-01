@@ -1,5 +1,5 @@
 
-import { Outlet, useSearchParams } from "react-router-dom";
+import { Link, Outlet, useSearchParams } from "react-router-dom";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import * as Dialog from "@radix-ui/react-dialog";
 import { CaretDownIcon, MagnifyingGlassIcon, HamburgerMenuIcon, Cross2Icon } from "@radix-ui/react-icons";
@@ -36,27 +36,24 @@ export default function Navbar() {
                                     </NavigationMenu.Trigger>
                                     <NavigationMenu.Content className="absolute mt-2 min-w-[220px] rounded-xl bg-gray-800 border border-gray-700 shadow-lg p-2 z-50">
                                         <div className="flex flex-col">
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
+                                            <NavigationMenu.Link className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="/category/top_rated">
                                                 <span className="text-indigo-400">★</span> Top Rated
-                                            </a>
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
+                                            </NavigationMenu.Link>
+                                            <NavigationMenu.Link className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="/category/popular">
                                                 <span className="text-indigo-400">🔥</span> Popular
-                                            </a>
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
+                                            </NavigationMenu.Link>
+                                            <NavigationMenu.Link className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="/category/upcoming">
                                                 <span className="text-indigo-400">📅</span> Upcoming
-                                            </a>
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
-                                                <span className="text-indigo-400">🎬</span> Now Playing
-                                            </a>
+                                            </NavigationMenu.Link>
                                             <div className="border-t border-gray-700 my-1"></div>
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
+                                            <NavigationMenu.Link className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="/category/all">
                                                 <span className="text-indigo-400">🔍</span> Browse All
-                                            </a>
+                                            </NavigationMenu.Link>
                                         </div>
                                     </NavigationMenu.Content>
                                 </NavigationMenu.Item>
                                 {/* TV Shows Dropdown */}
-                                <NavigationMenu.Item>
+                                {/* <NavigationMenu.Item>
                                     <NavigationMenu.Trigger className="flex items-center gap-1 font-medium text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-800 hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                         TV Shows <CaretDownIcon className="text-gray-400" />
                                     </NavigationMenu.Trigger>
@@ -80,42 +77,45 @@ export default function Navbar() {
                                             </a>
                                         </div>
                                     </NavigationMenu.Content>
-                                </NavigationMenu.Item>
+                                </NavigationMenu.Item> */}
+                                <div className="w-72">
+                                    <div className="relative w-full">
+
+                                        <input
+                                            className="bg-gray-800 w-full px-4 py-2 rounded-full text-gray-300 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            placeholder="Search movies, TV shows"
+                                            type="text"
+                                            value={searchParams.get("search") || ""}
+                                            onChange={handleSearchChange}
+                                        />
+                                        <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-400">
+                                            <MagnifyingGlassIcon className="w-5 h-5" />
+                                        </button>
+
+                                    </div>
+                                </div>
                                 {/* Watchlist */}
                                 <NavigationMenu.Item>
                                     <NavigationMenu.Trigger
                                         className="flex items-center gap-1 font-medium text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-800 hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
-                                        Watchlist
+                                        Favourites
                                     </NavigationMenu.Trigger>
                                 </NavigationMenu.Item>
 
                             </NavigationMenu.List>
                         </NavigationMenu.Root>
                         {/* Search Bar */}
-                        <div className="w-72">
-                            <div className="relative w-full">
 
-                                <input
-                                    className="bg-gray-800 w-full px-4 py-2 rounded-full text-gray-300 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                    placeholder="Search movies, TV shows"
-                                    type="text"
-                                    value={searchParams.get("search") || ""}
-                                    onChange={handleSearchChange}
-                                />
-                                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-400">
-                                    <MagnifyingGlassIcon className="w-5 h-5" />
-                                </button>
-
-                            </div>
-                        </div>
                     </div>
 
                     {/* Profile Button (always visible) */}
                     <button className="w-8 h-8 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-indigo-400 hover:border-indigo-500 transition-colors ml-2 md:ml-6">
+                        <Link to='/auth'>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                             <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z" fill="currentColor" />
                         </svg>
+                        </Link>
                     </button>
 
                     {/* Hamburger for mobile */}
