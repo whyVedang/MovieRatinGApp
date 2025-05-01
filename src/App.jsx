@@ -14,7 +14,7 @@ function App() {
         <Route index element={<Home />} />
         <Route path="/category/:category" element={<Category />} />
         <Route path="/favourites" element={<Favourite />} />
-        <Route path="/auth" element={<Auth />} />
+        <Route path="/login" element={<Auth />} />
         <Route path="MovieDetail/:id" element={<MovieDetail />} />
         <Route path="*" element={<PageNotFound />} />
       </Route>

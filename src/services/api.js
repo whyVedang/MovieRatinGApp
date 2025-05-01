@@ -30,12 +30,73 @@ export const GuestLogin = async () => {
         {
             headers: {
                 Authorization: `Bearer ${AUTHAPI}`,
-                withCredentials: true,
             }
         }
     )
     return res.json();
 }
-;
-  
-  
+
+export const GetRequestToken = async () => {
+    const res = await fetch(
+      'https://api.themoviedb.org/3/authentication/token/new',
+      {
+        headers: {
+          Authorization: `Bearer ${AUTHAPI}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    if (!res.ok) throw new Error('Failed to get request token');
+    return res.json();
+  };
+
+
+export const ValidateWithLogin = async ({ username, password, request_token }) => {
+    const res = await fetch(
+      `${BASE_URL}authentication/token/validate_with_login`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${AUTHAPI}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password, request_token }),
+      }
+    );
+    if (!res.ok) throw new Error('Failed to validate login');
+    return res.json();
+  };
+
+
+export const CreateSession = async ({ request_token }) => {
+    const res = await fetch(
+      'https://api.themoviedb.org/3/authentication/session/new',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${AUTHAPI}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ request_token }),
+      }
+    );
+    if (!res.ok) throw new Error('Failed to create session');
+    return res.json();
+  };
+
+  export const DeleteSession = async ({ session_id }) => {
+    const res = await fetch(
+      'https://api.themoviedb.org/3/authentication/session',
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${AUTHAPI}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ session_id }),
+      }
+    );
+    
+    if (!res.ok) throw new Error('Failed to delete session');
+    return res.json();
+  };
