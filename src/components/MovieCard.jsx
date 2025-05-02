@@ -4,10 +4,12 @@ import * as Tooltip from '@radix-ui/react-tooltip';
 import * as HoverCard from '@radix-ui/react-hover-card';
 import { HeartFilledIcon, HeartIcon, StarFilledIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { Link } from 'react-router-dom';
+import MovieDetail from '../Pages/MovieDetail';
 
 function MovieCard({ movie }) {
   const [isFavorite, setIsFavorite] = React.useState(false);
-
+  
+  // console.log(movie.id)
   return (
     <Tooltip.Provider>
       <div className="group bg-gray-800 rounded-lg overflow-hidden shadow-lg transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl relative">
@@ -44,66 +46,69 @@ function MovieCard({ movie }) {
           </AspectRatio.Root>
         </div>
 
-        {/* Card Content */}
-        <HoverCard.Root>
-          <HoverCard.Trigger asChild>
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-bold text-white text-lg line-clamp-1 group-hover:text-indigo-400 transition-colors">
-                  {movie.title}
-                </h2>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <Link to={`/MovieDetail/${movie.id}`} className="text-gray-400 hover:text-indigo-400">
-                      <InfoCircledIcon className="w-4 h-4" />
-                    </Link>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      className="bg-gray-900 text-gray-300 px-3 py-1.5 rounded text-xs shadow-lg border border-gray-700"
-                      sideOffset={5}
-                    >
-                      View details
-                      <Tooltip.Arrow className="fill-gray-900" />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-              </div>
+        <Link to={`/MovieDetail/${movie.id}`} className="no-underline">
+          {/* Card Content */}
 
-              <div className="text-gray-400 text-sm mt-1 font-medium">
-                {movie.release_date?.substring(0, 4) || 'Unknown year'}
-                {movie.runtime && ` • ${movie.runtime} min`}
-              </div>
+          <HoverCard.Root>
+            <HoverCard.Trigger asChild>
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-bold text-white text-lg line-clamp-1 group-hover:text-indigo-400 transition-colors">
+                    {movie.title}
+                  </h2>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <Link to={`/MovieDetail/${movie.id}`} className="text-gray-400 hover:text-indigo-400">
+                        <InfoCircledIcon className="w-4 h-4" />
+                      </Link>
+                    </Tooltip.Trigger>
+                    <Tooltip.Portal>
+                      <Tooltip.Content
+                        className="bg-gray-900 text-gray-300 px-3 py-1.5 rounded text-xs shadow-lg border border-gray-700"
+                        sideOffset={5}
+                      >
+                        View details
+                        <Tooltip.Arrow className="fill-gray-900" />
+                      </Tooltip.Content>
+                    </Tooltip.Portal>
+                  </Tooltip.Root>
+                </div>
 
-              <div className="mt-2 flex flex-wrap gap-1">
-                {movie.genres?.slice(0, 2).map(genre => (
-                  <span key={genre.id} className="text-xs px-2 py-0.5 bg-gray-700 text-gray-300 rounded-full">
-                    {genre.name}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </HoverCard.Trigger>
+                <div className="text-gray-400 text-sm mt-1 font-medium">
+                  {movie.release_date?.substring(0, 4) || 'Unknown year'}
+                  {movie.runtime && ` • ${movie.runtime} min`}
+                </div>
 
-          <HoverCard.Portal>
-            <HoverCard.Content
-              className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-4 w-72 z-50"
-              sideOffset={5}
-              align="center"
-            >
-              <div className="text-sm text-gray-300 line-clamp-4">
-                {movie.overview || 'No description available.'}
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {movie.genres?.slice(0, 2).map(genre => (
+                    <span key={genre.id} className="text-xs px-2 py-0.5 bg-gray-700 text-gray-300 rounded-full">
+                      {genre.name}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <div className="mt-3 text-xs text-gray-400">
-                {movie.cast?.slice(0, 3).map(actor => actor.name).join(', ')}
-                {movie.cast?.length > 3 && ', and more'}
-              </div>
-              <HoverCard.Arrow className="fill-gray-900" />
-            </HoverCard.Content>
-          </HoverCard.Portal>
-        </HoverCard.Root>
+            </HoverCard.Trigger>
+
+            <HoverCard.Portal>
+              <HoverCard.Content
+                className="bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-4 w-72 z-50"
+                sideOffset={5}
+                align="center"
+              >
+                <div className="text-sm text-gray-300 line-clamp-4">
+                  {movie.overview || 'No description available.'}
+                </div>
+                <div className="mt-3 text-xs text-gray-400">
+                  {movie.cast?.slice(0, 3).map(actor => actor.name).join(', ')}
+                  {movie.cast?.length > 3 && ', and more'}
+                </div>
+                <HoverCard.Arrow className="fill-gray-900" />
+              </HoverCard.Content>
+            </HoverCard.Portal>
+          </HoverCard.Root>
+        </Link>
       </div>
-    </Tooltip.Provider>
+    </Tooltip.Provider >
   );
 }
 

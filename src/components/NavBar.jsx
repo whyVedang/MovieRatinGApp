@@ -16,7 +16,7 @@ export default function Navbar() {
 
     return (
         <div>
-            <nav className="bg-gradient-to-r from-[#0a2540] to-[#1b314d] px-4 md:px-8 py-3 shadow-md">
+            <nav className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-[#0a2540] to-[#1b314d] px-4 md:px-8 py-3 shadow-md">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     {/* Logo */}
                     <a href="/" className="font-black text-2xl tracking-tight flex items-center space-x-2">
@@ -100,7 +100,9 @@ export default function Navbar() {
                                     <NavigationMenu.Trigger
                                         className="flex items-center gap-1 font-medium text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-800 hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
+                                        <Link to="/favourites" className="flex items-center gap-1">
                                         Favourites
+                                        </Link>
                                     </NavigationMenu.Trigger>
                                 </NavigationMenu.Item>
 

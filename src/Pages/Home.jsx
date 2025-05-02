@@ -80,6 +80,9 @@ function Home() {
     getUpcomingMovies();
   }, []);
 
+  // const handleCLick = (movie) => {
+  //   console.log("Movie clicked:", movie);
+  // }
   // Search functionality
   useEffect(() => {
     const performSearch = async () => {
@@ -134,10 +137,10 @@ function Home() {
   }
 
   return (
-    <div className="bg-gray-900 min-h-screen text-white py-8 px-4 md:px-8">
+    <div className="bg-gray-900 min-h-screen pt-25 text-white py-8 px-4 md:px-8">
       <div className="mb-12 text-center">
         <h1 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent mb-3">
-          Discover Amazing Movies
+          Discover Movies
         </h1>
         <p className="text-gray-400 max-w-2xl mx-auto mb-8">
           Your ultimate destination for exploring the best of cinema

@@ -100,3 +100,32 @@ export const CreateSession = async ({ request_token }) => {
     if (!res.ok) throw new Error('Failed to delete session');
     return res.json();
   };
+
+  export const fetchMovieDetails = async (movieId) => {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${API}`);
+    if (!res.ok) throw new Error('Failed to get movie details');
+    const data = await res.json();
+    console.log(data)
+    return data;
+  }
+  export const fetchMovieCredits = async (movieId) => {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${API}`);
+    if (!res.ok) throw new Error('Failed to get movie details');
+    const data = await res.json();
+    console.log(data)
+    return data;
+  }
+  export const fetchMovieRecommendation = async (movieId) => {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/recommendations?api_key=${API}`);
+    if (!res.ok) throw new Error('Failed to get movie details');
+    const data = await res.json();
+    console.log(data)
+    return data;
+  }
+  export const fetchMovieReviews = async (movieId) => {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/${movieId}/reviews?api_key=${API}`);
+    if (!res.ok) throw new Error('Failed to get movie details');
+    const data = await res.json();
+    console.log(data)
+    return data;
+  }

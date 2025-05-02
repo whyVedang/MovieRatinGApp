@@ -1,8 +1,16 @@
-import React from 'react'
+
 
 function Favourite() {
   return (
-    <div>Favourite</div>
+    <>
+      <div>Favourite</div>
+      <div>Favourite</div>
+      <div>Favourite</div>
+      <div>Favourite</div>
+      <div>Favourite</div>
+      <div>Favourite</div>
+      <div>Favourite</div>
+    </>
   )
 }
 
