@@ -2,7 +2,7 @@ import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } 
 import Home from "./Pages/Home";
 import Favourite from "./Pages/Favourite";
 import MovieDetail from "./Pages/MovieDetail";
-import PageNotFound from "./Pages/PageNotFOund";
+import NotFound from "./Pages/PageNotFound";
 import Navbar from "./components/NavBar";
 import Category from "./Pages/Category";
 import Auth from "./auth/auth";
@@ -16,7 +16,7 @@ function App() {
         <Route path="/favourites" element={<Favourite />} />
         <Route path="/login" element={<Auth />} />
         <Route path="MovieDetail/:id" element={<MovieDetail />} />
-        <Route path="*" element={<PageNotFound />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     )
   );
