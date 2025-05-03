@@ -30,8 +30,8 @@ function Home() {
   useEffect(() => {
     const getTopRatedMovies = async () => {
       try {
-        const data = await fetchTopratedMovies();
-        setTopRatedMovies(data);
+        const data = await fetchTopratedMovies(1);
+        await setTopRatedMovies(data.results || []);
       }
       catch (error) {
         console.error("Error fetching top rated movies:", error);
@@ -48,8 +48,8 @@ function Home() {
   useEffect(() => {
     const getPopularMovies = async () => {
       try {
-        const data = await fetchPopularMovies();
-        setPopularMovies(data);
+        const data = await fetchPopularMovies(1);
+        await setPopularMovies(data.results || []);
       }
       catch (error) {
         console.error("Error fetching popular movies:", error);
@@ -66,8 +66,8 @@ function Home() {
   useEffect(() => {
     const getUpcomingMovies = async () => {
       try {
-        const data = await fetchUpcomingMovies();
-        setUpcomingMovies(data);
+        const data = await fetchUpcomingMovies(1);
+        await setUpcomingMovies(data.results || []);
       }
       catch (error) {
         console.error("Error fetching upcoming movies:", error);

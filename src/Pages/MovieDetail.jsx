@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { Star, Clock, Calendar, Globe, Tag, Heart, ArrowLeft, ArrowRight, Film, Users, MessageSquare, ChevronDown, User } from 'lucide-react';
 import * as Collapsible from '@radix-ui/react-collapsible';
+import useFavorite from './useFavorite';
 
 function MovieDetail() {
   const { id } = useParams();
@@ -17,12 +18,12 @@ function MovieDetail() {
   const [userRating, setUserRating] = useState(() => {
     return Number(localStorage.getItem(`rating_${id}`)) || 0;
   });
-  const [isFavorite, setIsFavorite] = useState(false);
 
   const handleRating = (value) => {
     setUserRating(value);
     localStorage.setItem(`rating_${id}`, value);
   };
+
   useEffect(() => {
     const getMovieDetail = async () => {
       setLoading(true);
@@ -96,11 +97,6 @@ function MovieDetail() {
     getMovieRecommendation();
   }, [id]);
 
-  const handleFavoriteClick = () => {
-    setIsFavorite(!isFavorite);
-    console.log(`Movie ${id} favorite status: ${!isFavorite}`);
-  };
-
   const toggleReviewExpansion = (reviewId) => {
     setExpandedReviews(prev =>
       prev.includes(reviewId)
@@ -108,10 +104,23 @@ function MovieDetail() {
         : [...prev, reviewId]
     );
   };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'No date available';
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const { isFav, UpdateFavorite } = useFavorite();
+
+  const handleFavoriteClick = () => {
+    UpdateFavorite({
+      id: Number(details.id),
+      title: details.title,
+      poster_path: details.poster_path,
+      vote_average: details.vote_average,
+      release_date: details.release_date
+    });
   };
 
   // Framer Motion variants
@@ -151,12 +160,7 @@ function MovieDetail() {
       </div>
     );
   }
-  // <Star
-  //   fill={(hoverRating || userRating) >= star ? '#FACC15' : 'none'}
-  //   stroke={(hoverRating || userRating) >= star ? '#FACC15' : '#94A3B8'}
-  //   size={24}
-  //   className="transition-all duration-200"
-  // />
+
   // Star Rating Component
   const StarRating = () => {
     const [hoverRating, setHoverRating] = useState(0);
@@ -281,85 +285,85 @@ function MovieDetail() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleFavoriteClick}
-                  className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-md transition-colors ${isFavorite
+                  className={`flex items-center justify-center gap-2 w-full py-3 px-4 rounded-md transition-colors ${isFav(Number(details.id))
                     ? 'bg-pink-700 hover:bg-pink-800 text-white'
                     : 'bg-pink-600 hover:bg-pink-700 text-white'
                     }`}
                 >
-                  <Heart size={18} fill={isFavorite ? "white" : "none"} />
-                  <span>{isFavorite ? 'Added to Favorites' : 'Add to Favorites'}</span>
+                  <Heart size={18} fill={isFav(Number(details.id)) ? "white" : "none"} />
+                  <span>{isFav(Number(details.id)) ? 'Added to Favorites' : 'Add to Favorites'}</span>
                 </motion.button>
-              </motion.div>
 
-              {/* Movie Info Card */}
-              <motion.div
-                variants={itemVariants}
-                className="mt-6 bg-gray-800/70 backdrop-blur-sm rounded-lg p-5 border border-gray-700"
-              >
-                <h3 className="text-lg font-semibold mb-4 text-gray-200">Movie Info</h3>
+                {/* Movie Info Card */}
+                <motion.div
+                  variants={itemVariants}
+                  className="mt-6 bg-gray-800/70 backdrop-blur-sm rounded-lg p-5 border border-gray-700"
+                >
+                  <h3 className="text-lg font-semibold mb-4 text-gray-200">Movie Info</h3>
 
-                <div className="space-y-4 text-sm">
-                  <motion.div
-                    variants={itemVariants}
-                    className="flex items-start"
-                  >
-                    <Calendar className="text-indigo-400 mt-0.5 mr-3 flex-shrink-0" size={16} />
-                    <div>
-                      <p className="text-gray-400 font-medium">Release Date</p>
-                      <p className="text-gray-200">{formatDate(details.release_date)}</p>
-                    </div>
-                  </motion.div>
+                  <div className="space-y-4 text-sm">
+                    <motion.div
+                      variants={itemVariants}
+                      className="flex items-start"
+                    >
+                      <Calendar className="text-indigo-400 mt-0.5 mr-3 flex-shrink-0" size={16} />
+                      <div>
+                        <p className="text-gray-400 font-medium">Release Date</p>
+                        <p className="text-gray-200">{formatDate(details.release_date)}</p>
+                      </div>
+                    </motion.div>
 
-                  <motion.div
-                    variants={itemVariants}
-                    className="flex items-start"
-                  >
-                    <Clock className="text-indigo-400 mt-0.5 mr-3 flex-shrink-0" size={16} />
-                    <div>
-                      <p className="text-gray-400 font-medium">Runtime</p>
-                      <p className="text-gray-200">
-                        {details.runtime ? `${Math.floor(details.runtime / 60)}h ${details.runtime % 60}m` : 'Not available'}
-                      </p>
-                    </div>
-                  </motion.div>
+                    <motion.div
+                      variants={itemVariants}
+                      className="flex items-start"
+                    >
+                      <Clock className="text-indigo-400 mt-0.5 mr-3 flex-shrink-0" size={16} />
+                      <div>
+                        <p className="text-gray-400 font-medium">Runtime</p>
+                        <p className="text-gray-200">
+                          {details.runtime ? `${Math.floor(details.runtime / 60)}h ${details.runtime % 60}m` : 'Not available'}
+                        </p>
+                      </div>
+                    </motion.div>
 
-                  <motion.div
-                    variants={itemVariants}
-                    className="flex items-start"
-                  >
-                    <Globe className="text-indigo-400 mt-0.5 mr-3 flex-shrink-0" size={16} />
-                    <div>
-                      <p className="text-gray-400 font-medium">Language</p>
-                      <p className="text-gray-200">
-                        {details.original_language ? details.original_language.toUpperCase() : 'Not available'}
-                      </p>
-                    </div>
-                  </motion.div>
+                    <motion.div
+                      variants={itemVariants}
+                      className="flex items-start"
+                    >
+                      <Globe className="text-indigo-400 mt-0.5 mr-3 flex-shrink-0" size={16} />
+                      <div>
+                        <p className="text-gray-400 font-medium">Language</p>
+                        <p className="text-gray-200">
+                          {details.original_language ? details.original_language.toUpperCase() : 'Not available'}
+                        </p>
+                      </div>
+                    </motion.div>
 
-                  <motion.div
-                    variants={itemVariants}
-                    className="flex items-start"
-                  >
-                    <Star className="text-indigo-400 mt-0.5 mr-3 flex-shrink-0" size={16} />
-                    <div>
-                      <p className="text-gray-400 font-medium">IMDB Rating</p>
-                      <p className="text-gray-200">
-                        {details.vote_average ? (
-                          <span className="flex items-center">
-                            {details.vote_average.toFixed(1)}/10
-                            <span className="text-gray-500 ml-2 text-xs">
-                              ({details.vote_count?.toLocaleString() || 0} votes)
+                    <motion.div
+                      variants={itemVariants}
+                      className="flex items-start"
+                    >
+                      <Star className="text-indigo-400 mt-0.5 mr-3 flex-shrink-0" size={16} />
+                      <div>
+                        <p className="text-gray-400 font-medium">IMDB Rating</p>
+                        <p className="text-gray-200">
+                          {details.vote_average ? (
+                            <span className="flex items-center">
+                              {details.vote_average.toFixed(1)}/10
+                              <span className="text-gray-500 ml-2 text-xs">
+                                ({details.vote_count?.toLocaleString() || 0} votes)
+                              </span>
                             </span>
-                          </span>
-                        ) : 'Not rated'}
-                      </p>
-                    </div>
-                  </motion.div>
-                </div>
+                          ) : 'Not rated'}
+                        </p>
+                      </div>
+                    </motion.div>
+                  </div>
+                </motion.div>
               </motion.div>
             </motion.div>
 
-            {/* Movie Details */}
+            {/* Movie Details - FIXED: Now a sibling to the poster section, not a child */}
             <div className="lg:w-2/3">
               <motion.h1
                 variants={itemVariants}
@@ -424,6 +428,8 @@ function MovieDetail() {
                 <h2 className="text-xl font-semibold mb-4">Rate this movie</h2>
                 <StarRating />
               </motion.div>
+
+              {/* Recommendations Section */}
               {recommendations?.results?.length > 0 && (
                 <motion.div
                   variants={itemVariants}
@@ -482,6 +488,7 @@ function MovieDetail() {
                   </div>
                 </motion.div>
               )}
+
               {/* Cast Section */}
               <motion.div variants={itemVariants} className="mb-10">
                 <h2 className="text-xl font-semibold mb-5 flex items-center">
@@ -519,7 +526,7 @@ function MovieDetail() {
                 </div>
               </motion.div>
 
-
+              {/* Reviews Section */}
               {reviews?.results?.length > 0 && (
                 <motion.div
                   variants={itemVariants}
@@ -599,13 +606,6 @@ function MovieDetail() {
                         whileTap={{ scale: 0.98 }}
                         className="text-center"
                       >
-                        <Link
-                          to={`/movie/${id}/reviews`}
-                          className="inline-flex items-center px-4 py-2 rounded-md bg-indigo-700/50 hover:bg-indigo-700 text-white text-sm transition-colors"
-                        >
-                          View all {reviews.results.length} reviews
-                          <ArrowRight size={14} className="ml-2" />
-                        </Link>
                       </motion.div>
                     )}
                   </div>
@@ -615,9 +615,6 @@ function MovieDetail() {
           </div>
         </div>
       </motion.div>
-      <div>
-
-      </div>
     </Tooltip.Provider>
   );
 }

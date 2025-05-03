@@ -4,11 +4,19 @@ import * as Tooltip from '@radix-ui/react-tooltip';
 import * as HoverCard from '@radix-ui/react-hover-card';
 import { HeartFilledIcon, HeartIcon, StarFilledIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 import { Link } from 'react-router-dom';
-import MovieDetail from '../Pages/MovieDetail';
+import useFavorite from '../Pages/useFavorite';
 
 function MovieCard({ movie }) {
-  const [isFavorite, setIsFavorite] = React.useState(false);
-  
+  const { isFav, UpdateFavorite } = useFavorite();
+  const handleFavoriteClick = () => {
+    UpdateFavorite({
+      id: Number(movie.id),
+      title: movie.title,
+      poster_path: movie.poster_path,
+      vote_average: movie.vote_average,
+      release_date: movie.release_date
+    });
+  };
   // console.log(movie.id)
   return (
     <Tooltip.Provider>
@@ -33,11 +41,11 @@ function MovieCard({ movie }) {
 
             {/* Favorite Button */}
             <button
-              onClick={() => setIsFavorite(!isFavorite)}
+              onClick={handleFavoriteClick}
               className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center bg-gray-900/60 rounded-full transform transition-all duration-300 backdrop-blur-sm
                 hover:bg-gray-800 active:scale-90"
             >
-              {isFavorite ? (
+              {isFav(movie.id) ? (
                 <HeartFilledIcon className="w-4 h-4 text-rose-500" />
               ) : (
                 <HeartIcon className="w-4 h-4 text-gray-300 group-hover:text-white" />

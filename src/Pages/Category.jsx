@@ -3,16 +3,19 @@ import { useState, useEffect } from "react";
 import MovieCard from "../components/MovieCard";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { fetchTopratedMovies, fetchPopularMovies, fetchUpcomingMovies } from "../services/api";
-
+import Pagination from "../components/Pagination";
 function Category() {
-const { category } = useParams();
+    const { category } = useParams();
     const navigate = useNavigate();
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    const goBack = () => {
+        navigate(-1);
 
+    }
     // Determine category title and fetch function
     const getCategoryInfo = () => {
         switch (category) {
@@ -51,8 +54,9 @@ const { category } = useParams();
             setLoading(true);
             try {
                 const data = await fetchFunction(currentPage);
-                setMovies(data);
+                setMovies(data.results || []);
                 setTotalPages(data.total_pages || Math.ceil(data.length / 20));
+                console.log(data)
             } catch (error) {
                 console.error(`Error fetching ${category} movies:`, error);
                 setError(`Failed to load ${category} movies`);
@@ -63,9 +67,14 @@ const { category } = useParams();
 
         fetchMovies();
     }, [category, currentPage, fetchFunction]);
-    // Navigation
-    const goBack = () => navigate(-1);
-    const goToPage = (page) => setCurrentPage(page);
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+            fetchFunction(newPage);
+            // Optionally scroll to top
+            window.scrollTo(0, 0);
+        }
+    };
 
     return (
         <div className="bg-gray-900 min-h-screen text-white py-8 px-4 md:px-8">
@@ -79,7 +88,7 @@ const { category } = useParams();
                     Back
                 </button>
 
-                
+
             </div>
 
             {/* Category Title */}
@@ -126,79 +135,12 @@ const { category } = useParams();
                         </div>
                     )}
                 </>
-            )}
-
-            {/* Pagination */}
-            {!loading && !error && totalPages > 1 && (
-                <div className="mt-12 flex justify-center">
-                    <nav className="flex items-center space-x-2">
-                        <button
-                            onClick={() => goToPage(Math.max(1, currentPage - 1))}
-                            disabled={currentPage === 1}
-                            className={`px-3 py-2 rounded ${currentPage === 1
-                                    ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    : 'bg-gray-800 hover:bg-gray-700 text-white'
-                                }`}
-                        >
-                            Previous
-                        </button>
-
-                        {/* Page Numbers */}
-                        {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                            // Calculate which page numbers to show
-                            let pageNum;
-                            if (totalPages <= 5) {
-                                pageNum = i + 1;
-                            } else if (currentPage <= 3) {
-                                pageNum = i + 1;
-                            } else if (currentPage >= totalPages - 2) {
-                                pageNum = totalPages - 4 + i;
-                            } else {
-                                pageNum = currentPage - 2 + i;
-                            }
-
-                            // Only render if pageNum is valid
-                            if (pageNum > 0 && pageNum <= totalPages) {
-                                return (
-                                    <button
-                                        key={pageNum}
-                                        onClick={() => goToPage(pageNum)}
-                                        className={`w-10 h-10 rounded-full ${currentPage === pageNum
-                                                ? 'bg-indigo-600 text-white'
-                                                : 'bg-gray-800 hover:bg-gray-700 text-white'
-                                            }`}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                );
-                            }
-                            return null;
-                        })}
-
-                        {totalPages > 5 && currentPage < totalPages - 2 && (
-                            <>
-                                <span className="text-gray-500">...</span>
-                                <button
-                                    onClick={() => goToPage(totalPages)}
-                                    className="w-10 h-10 rounded-full bg-gray-800 hover:bg-gray-700 text-white"
-                                >
-                                    {totalPages}
-                                </button>
-                            </>
-                        )}
-
-                        <button
-                            onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
-                            disabled={currentPage === totalPages}
-                            className={`px-3 py-2 rounded ${currentPage === totalPages
-                                    ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
-                                    : 'bg-gray-800 hover:bg-gray-700 text-white'
-                                }`}
-                        >
-                            Next
-                        </button>
-                    </nav>
-                </div>
+            )}{totalPages > 1 && (
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
             )}
         </div>
     );

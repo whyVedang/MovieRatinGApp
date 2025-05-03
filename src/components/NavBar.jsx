@@ -95,13 +95,13 @@ export default function Navbar() {
 
                                     </div>
                                 </div>
-                                {/* Watchlist */}
+                                {/* Favourites */}
                                 <NavigationMenu.Item>
                                     <NavigationMenu.Trigger
                                         className="flex items-center gap-1 font-medium text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-800 hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     >
                                         <Link to="/favourites" className="flex items-center gap-1">
-                                        Favourites
+                                            Favourites
                                         </Link>
                                     </NavigationMenu.Trigger>
                                 </NavigationMenu.Item>
@@ -113,11 +113,11 @@ export default function Navbar() {
                     </div>
 
                     {/* Profile Button (always visible) */}
-                    <button className="w-8 h-8 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-indigo-400 hover:border-indigo-500 transition-colors ml-2 md:ml-6">
+                    <button className="w-8 h-8 rounded-full mr-5  bg-gray-800 border border-gray-700 flex items-center justify-center text-indigo-400 hover:border-indigo-500 transition-colors ml-2 md:ml-6">
                         <Link to='/login'>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z" fill="currentColor" />
-                        </svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z" fill="currentColor" />
+                            </svg>
                         </Link>
                     </button>
                     <LogoutButton />

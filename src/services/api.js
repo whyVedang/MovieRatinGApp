@@ -1,20 +1,21 @@
 const API = import.meta.env.VITE_TMDB_APIKEY;
 const AUTHAPI = import.meta.env.VITE_TMDB_AUTHKEY
 const BASE_URL = 'https://api.themoviedb.org/3/'
-export const fetchTopratedMovies = async () => {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=${API}`);
+export const fetchTopratedMovies = async (page) => {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/top_rated?api_key=${API}&page=${page}`);
     const data = await res.json();
-    return data.results;
+    return data;
 }
-export const fetchPopularMovies = async () => {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API}`);
+export const fetchPopularMovies = async (page) => {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${API}&page=${page}`);
     const data = await res.json();
-    return data.results;
+    console.log(data)
+    return data;
 }
-export const fetchUpcomingMovies = async () => {
-    const res = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API}`);
+export const fetchUpcomingMovies = async (page) => {
+    const res = await fetch(`https://api.themoviedb.org/3/movie/upcoming?api_key=${API}&page=${page}`);
     const data = await res.json();
-    return data.results;
+    return data;
 }
 
 
