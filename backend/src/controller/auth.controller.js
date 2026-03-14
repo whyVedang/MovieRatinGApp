@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt"
-import { prisma } from "../lib/prism"
+import prisma  from "../lib/prisma.js"
 import jwt  from "jsonwebtoken"
 
 export const register=async (req,res)=>{

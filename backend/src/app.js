@@ -2,9 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-import authRouter from "./routes/auth.routes.js";
-import favoriteRouter from "./routes/favorite.routes.js";
-import reviewRouter from "./routes/review.routes.js";
+import authRouter from "./routes/auth.router.js";
 
 const app = express();
 
@@ -17,8 +15,6 @@ app.use(cors({
 }));
 
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/favorite", favoriteRouter);
-app.use("/api/v1/review", reviewRouter);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
