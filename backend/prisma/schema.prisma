@@ -23,6 +23,7 @@ model Review {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+  @@unique([userId, movieId])
 }
 
 model Favorite {
@@ -30,4 +31,5 @@ model Favorite {
   movieId   Int      // TMDB Movie ID
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
