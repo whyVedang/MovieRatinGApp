@@ -6,7 +6,7 @@ import {tokenVerify}  from '../middleware/auth.middleware.js';
 
 const router=express.Router()
 
-router.post('/:movieId', tokenVerify, addFavorite );
+router.post('/', tokenVerify, addFavorite );
 router.get('/', tokenVerify, getFavorite);
 router.delete('/:movieId', tokenVerify, removeFavorite);
 

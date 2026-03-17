@@ -1,16 +1,16 @@
-import { configDotenv } from "dotenv"
 import jwt from "jsonwebtoken"
+import dotenv from "dotenv";
+dotenv.config();
 
 export const tokenVerify=(req,res,next)=>{
     const token=req.cookies.token
-
     if(!token){
         return res.status(401).json({message : " LOL "})
     }
     try{
-        const verify=jwt.verify(token,configDotenv.JWT_SECRET)
+        const verify=jwt.verify(token,process.env.JWT_SECRET)
         
-        req.user=verified
+        req.user=verify
         next()
     }
     catch(error) {
