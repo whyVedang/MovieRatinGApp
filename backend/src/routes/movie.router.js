@@ -7,8 +7,6 @@ const router = express.Router();
 router.get('/popular', PopularMovies);
 router.get('/top_rated', TopRatedMovies);
 router.get('/upcoming', UpcomingMovies);
-router.get('/:id', SearchMovies);
-
 router.get("/search", SearchMovies);
 
 router.get("/:id", MovieDetails);

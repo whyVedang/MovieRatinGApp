@@ -4,7 +4,7 @@ dotenv.config()
 
 const API = process.env.TMDB_APIKEY
 const AUTHAPI = process.env.TMDB_AUTHKEY
-const BASE_URL = 'https://api.themoviedb.org/3/'
+const BASE_URL = 'https://api.themoviedb.org/3'
 
 if (!API) {
   throw new Error("TMDB_APIKEY is missing in .env");
