@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchMovieCredits, fetchMovieDetails, fetchMovieRecommendation, fetchMovieReviews } from '../services/api';
+import { fetchMovieCredits, fetchMovieDetails, fetchMovieRecommendations, fetchMovieReviews } from '../services/Movieapi.js';
 import { motion } from 'framer-motion';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import { Star, Clock, Calendar, Globe, Tag, Heart, ArrowLeft, ArrowRight, Film, Users, MessageSquare, ChevronDown, User } from 'lucide-react';
@@ -83,7 +83,7 @@ function MovieDetail() {
     const getMovieRecommendation = async () => {
       setLoading(true);
       try {
-        const data = await fetchMovieRecommendation(id);
+        const data = await fetchMovieRecommendations(id);
         setRecommendations(data);
         console.log(data);
       }

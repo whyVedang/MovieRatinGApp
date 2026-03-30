@@ -1,2 +1,27 @@
 @import "@radix-ui/themes/styles.css";
 @import "tailwindcss";
+
+:root {
+  --bg-base: #0b0b0c;
+  --text-1: #ffffff;
+  --text-2: #c7c7c7;
+  --text-3: #8a8a8a;
+  --border: #1f1f22;
+  --border-md: #2a2a2e;
+  --accent: #7c3aed;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+
+
+.movie-card-wrap {
+  transition: transform 0.2s ease;
+}
+.movie-card-wrap:hover {
+  transform: translateY(-4px);
+}

@@ -2,148 +2,194 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import MovieCard from "../components/MovieCard";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
-import { fetchTopratedMovies, fetchPopularMovies, fetchUpcomingMovies } from "../services/api";
+import {
+  fetchTopRatedMovies,
+  fetchPopularMovies,
+  fetchUpcomingMovies
+} from "../services/Movieapi.js";
 import Pagination from "../components/Pagination";
+
 function Category() {
-    const { category } = useParams();
-    const navigate = useNavigate();
-    const [movies, setMovies] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(0);
-    const goBack = () => {
-        navigate(-1);
+  const { category } = useParams();
+  const navigate = useNavigate();
 
+  const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const goBack = () => navigate(-1);
+
+  /* ───────── Category Config (UNCHANGED) ───────── */
+  const getCategoryInfo = () => {
+    switch (category) {
+      case "top_rated":
+        return { title: "Top Rated", fetchFunction: fetchTopRatedMovies };
+      case "popular":
+        return { title: "Popular", fetchFunction: fetchPopularMovies };
+      case "upcoming":
+        return { title: "Upcoming", fetchFunction: fetchUpcomingMovies };
+      default:
+        return { title: "Movies", fetchFunction: fetchPopularMovies };
     }
-    // Determine category title and fetch function
-    const getCategoryInfo = () => {
-        switch (category) {
-            case "top_rated":
-                return {
-                    title: "Top Rated Movies",
-                    fetchFunction: fetchTopratedMovies,
-                    icon: "⭐"
-                };
-            case "popular":
-                return {
-                    title: "Popular Movies",
-                    fetchFunction: fetchPopularMovies,
-                    icon: "🔥"
-                };
-            case "upcoming":
-                return {
-                    title: "Upcoming Movies",
-                    fetchFunction: fetchUpcomingMovies,
-                    icon: "🕒"
-                };
-            default:
-                return {
-                    title: "Movies",
-                    fetchFunction: fetchPopularMovies,
-                    icon: "🎬"
-                };
-        }
+  };
+
+  const { title, fetchFunction } = getCategoryInfo();
+
+  /* ───────── Fetch (UNCHANGED) ───────── */
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data = await fetchFunction(currentPage);
+        setMovies(data.results || []);
+        setTotalPages(data.total_pages || 0);
+      } catch {
+        setError(`Failed to load ${title}`);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const { title, fetchFunction, icon } = getCategoryInfo();
+    fetchMovies();
+  }, [category, currentPage, fetchFunction]);
 
-    // Fetch movies for this category
-    useEffect(() => {
-        const fetchMovies = async () => {
-            setLoading(true);
-            try {
-                const data = await fetchFunction(currentPage);
-                setMovies(data.results || []);
-                setTotalPages(data.total_pages || Math.ceil(data.length / 20));
-                console.log(data)
-            } catch (error) {
-                console.error(`Error fetching ${category} movies:`, error);
-                setError(`Failed to load ${category} movies`);
-            } finally {
-                setLoading(false);
-            }
-        };
+  const handlePageChange = (p) => {
+    if (p >= 1 && p <= totalPages) {
+      setCurrentPage(p);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
-        fetchMovies();
-    }, [category, currentPage, fetchFunction]);
-    const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= totalPages) {
-            setCurrentPage(newPage);
-            fetchFunction(newPage);
-            // Optionally scroll to top
-            window.scrollTo(0, 0);
-        }
-    };
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--bg-base)", paddingTop: "80px" }}>
+      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "40px 32px 80px" }}>
 
-    return (
-        <div className="bg-gray-900 min-h-screen text-white py-8 px-4 md:px-8">
-            {/* Header with Back Button */}
-            <div className="mb-8 flex items-center justify-between">
-                <button
-                    onClick={goBack}
-                    className="flex items-center text-gray-400 hover:text-white transition"
-                >
-                    <ArrowLeftIcon className="w-5 h-5 mr-2" />
-                    Back
-                </button>
+        {/* ── Header ── */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "16px",
+          marginBottom: "48px"
+        }}>
+          <button
+            onClick={goBack}
+            style={{
+              color: "var(--text-3)",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              fontSize: "13px"
+            }}
+          >
+            <ArrowLeftIcon /> Back
+          </button>
 
+          <span style={{ color: "var(--border-md)", fontSize: "14px" }}>/</span>
 
-            </div>
-
-            {/* Category Title */}
-            <div className="mb-8 text-center">
-                <h1 className="text-3xl md:text-4xl font-bold flex items-center justify-center">
-                    <span className="mr-3">{icon}</span>
-                    {title}
-                </h1>
-            </div>
-
-            {/* Loading State */}
-            {loading && (
-                <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-                </div>
-            )}
-
-            {/* Error State */}
-            {error && !loading && (
-                <div className="text-center py-12">
-                    <p className="text-red-400 text-lg">{error}</p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded"
-                    >
-                        Try Again
-                    </button>
-                </div>
-            )}
-
-            {/* Movies Grid */}
-            {!loading && !error && (
-                <>
-                    {movies.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                            {movies.map((movie) => (
-                                <MovieCard key={movie.id} movie={movie} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-12 bg-gray-800/50 rounded-xl">
-                            <p className="text-gray-400 text-lg">No movies found</p>
-                            <p className="text-gray-500 mt-2">Try changing your query</p>
-                        </div>
-                    )}
-                </>
-            )}{totalPages > 1 && (
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                />
-            )}
+          <h1 style={{
+            fontSize: "14px",
+            fontWeight: 500,
+            color: "var(--text-1)",
+            letterSpacing: "-0.01em"
+          }}>
+            {title}
+          </h1>
         </div>
-    );
+
+        {/* ── Title ── */}
+        <div style={{ marginBottom: "48px", textAlign: "center" }}>
+          <h2 style={{
+            fontSize: "28px",
+            fontWeight: 600,
+            color: "var(--text-1)"
+          }}>
+            {title}
+          </h2>
+        </div>
+
+        {/* ── Loading ── */}
+        {loading && (
+          <div style={{
+            textAlign: "center",
+            padding: "80px 0",
+            color: "var(--text-3)"
+          }}>
+            Loading…
+          </div>
+        )}
+
+        {/* ── Error ── */}
+        {error && !loading && (
+          <div style={{ textAlign: "center", padding: "80px 0" }}>
+            <p style={{
+              color: "var(--text-3)",
+              marginBottom: "16px"
+            }}>
+              {error}
+            </p>
+
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                padding: "8px 20px",
+                borderRadius: "6px",
+                border: "1px solid var(--border-md)",
+                background: "transparent",
+                color: "var(--text-2)",
+                cursor: "pointer"
+              }}
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {/* ── Grid ── */}
+        {!loading && !error && (
+          <>
+            {movies.length > 0 ? (
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                gap: "16px"
+              }}>
+                {movies.map(m => (
+                  <div key={m.id} className="movie-card-wrap">
+                    <MovieCard movie={m} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{
+                textAlign: "center",
+                padding: "80px 0",
+                color: "var(--text-3)"
+              }}>
+                No movies found
+              </div>
+            )}
+
+            {/* ── Pagination ── */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default Category;
