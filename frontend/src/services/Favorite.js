@@ -13,6 +13,7 @@ export const addFavorite=async(movieId)=>{
 
 export const fetchFavorite=async () => {
     const res=await fetch(`${api}/favorite`,{
+        method:"GET",
         credentials:"include"
     })
     if(!res.ok) throw new Error("Failed to Fetch Favorite")
@@ -26,6 +27,6 @@ export const removeFavorite=async (movieId) => {
         credentials: 'include'
     })
     
-    if(!res.ok) throw new Error("Failed to Remove Favorite")
+    if(!res.ok) throw new Error("Failed to Add Favorite")
     return res.json();
 }

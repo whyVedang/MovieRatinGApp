@@ -1,10 +1,48 @@
 import { Link } from "react-router-dom";
 import { Star, Film, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
 import useFavorite from "../hooks/useFavorite";
+import { fetchMovieDetails } from "../services/Movieapi.js";
 import Footer from "../components/Footer";
 
-function FavouriteCard({ movie }) {
+function FavouriteCard({ favorite }) {
   const { UpdateFavorite } = useFavorite();
+  const [movie, setMovie] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMovie = async () => {
+      try {
+        const data = await fetchMovieDetails(favorite.movieId);
+        setMovie(data);
+      } catch (err) {
+        console.error(`Failed to fetch movie ${favorite.movieId}:`, err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMovie();
+  }, [favorite.movieId]);
+
+  if (loading) {
+    return (
+      <div style={{
+        position: "relative",
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-md)",
+        overflow: "hidden",
+        aspectRatio: "2/3",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}>
+        <div style={{ fontSize: "12px", color: "var(--text-3)" }}>Loading...</div>
+      </div>
+    );
+  }
+
+  if (!movie) return null;
 
   return (
     <div style={{
@@ -57,7 +95,7 @@ function FavouriteCard({ movie }) {
 
       {/* Remove button */}
       <button
-        onClick={() => UpdateFavorite({ id: movie.movieId ?? movie.id, ...movie })}
+        onClick={() => UpdateFavorite({ id: favorite.movieId })}
         style={{
           position: "absolute", top: "8px", right: "8px",
           width: "30px", height: "30px", borderRadius: "50%",
@@ -124,8 +162,8 @@ function FavouritesPage() {
             gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))",
             gap: "16px",
           }}>
-            {favorites.map((movie) => (
-              <FavouriteCard key={movie.movieId ?? movie.id} movie={movie} />
+            {favorites.map((fav) => (
+              <FavouriteCard key={fav.id} favorite={fav} />
             ))}
           </div>
         )}

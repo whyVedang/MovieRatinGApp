@@ -11,17 +11,26 @@ if (!API) {
 
 const fetchFromTMDB = async (endpoint) => {
   try {
-    console.log(API)
-    const res = await fetch(`${BASE_URL}${endpoint}&api_key=${API}`);
+    const url = `${BASE_URL}${endpoint}`;
+
+    const options = {
+      method: 'GET',
+      headers: {
+        accept: 'application/json',
+        Authorization: `Bearer ${API}`
+      }
+    };
+
+    const res = await fetch(url, options);
 
     if (!res.ok) {
-      throw new Error(`TMDB Error: ${res.status} ${res.statusText}`);
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`TMDB Error: ${res.status} - ${errorData.status_message || res.statusText}`);
     }
 
-    const data = await res.json();
-    return data;
+    return await res.json();
   } catch (error) {
-    throw new Error(`Error: ${error.message}`);
+    throw new Error(`${error.message}`);
   }
 };
 

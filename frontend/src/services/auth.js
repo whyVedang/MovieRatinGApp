@@ -16,7 +16,7 @@ export const signup = async ({ username, password }) => {
 }
 
 export const login = async ({ username, password }) => {
-    const res = await fetch(`${api}/register`, {
+    const res = await fetch(`${api}/login`, {
     method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -36,6 +36,6 @@ export const logout = async () => {
         credentials: 'include'
     });
 
-    if(res.ok) throw new Error(error.message || 'Logout failed');
+    if(!res.ok) throw new Error('Logout failed');
     return res.json();
 }

@@ -15,7 +15,7 @@ function Auth() {
     mutationKey: ["Login"],
     mutationFn: MutateUserLogin,
     onSuccess: (data) => {
-      localStorage.setItem("tmdb_session_id", data.session_id);
+      localStorage.setItem("movie_mate_user", data.session_id);
       navigate("/browse");
     },
     onError: (err) => {
@@ -79,7 +79,7 @@ function Auth() {
             Welcome back
           </h1>
           <p style={{ fontSize: "13px", color: "var(--text-3)", marginTop: "6px" }}>
-            Sign in with your TMDB account
+            Sign in with your account
           </p>
         </div>
 
@@ -112,7 +112,7 @@ function Auth() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="TMDB username"
+                placeholder="Username"
                 disabled={isPending}
                 style={inputStyle}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
@@ -171,7 +171,7 @@ function Auth() {
             onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent-hover)")}
             onMouseLeave={(e) => (e.currentTarget.style.color = "var(--accent)")}
           >
-            Create one on TMDB
+            Create one on CineVault
           </a>
         </p>
 

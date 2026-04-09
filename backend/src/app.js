@@ -13,7 +13,6 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(errorHandler);
 app.use(cors({
   origin: "http://localhost:5173",
   credentials: true
@@ -30,5 +29,6 @@ app.get("/api/health", (req, res) => {
     message: "MovieMate API is running"
   });
 });
+app.use(errorHandler);
 
 export default app;

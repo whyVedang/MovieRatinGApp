@@ -103,9 +103,12 @@ function Home() {
     const t = setTimeout(async () => {
       setLoadingSearch(true);
       try {
-        const results = await fetchSearchMovies(searchTerm);
-        setSearchResults(results);
-      } catch { /* silent */ }
+        const data = await fetchSearchMovies(searchTerm);
+        setSearchResults(data.results || []);
+      } catch (err) { 
+        console.error("Search error:", err);
+        setSearchResults([]);
+      }
       finally { setLoadingSearch(false); }
     }, 400);
     return () => clearTimeout(t);

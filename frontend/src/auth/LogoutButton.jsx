@@ -12,7 +12,7 @@ function LogoutButton() {
     onError: (err) => console.error("Logout error:", err),
   });
 
-  const sessionId = localStorage.getItem("tmdb_session_id");
+  const sessionId = localStorage.getItem("movie_mate_user");
   if (!sessionId) return null; // hide when not logged in
 
   return (

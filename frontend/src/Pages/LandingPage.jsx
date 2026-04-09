@@ -332,7 +332,7 @@ export default function LandingPage() {
                             fontSize: "11px", fontWeight: 600, letterSpacing: "0.22em",
                             textTransform: "uppercase", color: "var(--text-3)",
                         }}>
-                            MovieMate
+                            CineVault
                         </span>
                     </div>
 

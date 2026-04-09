@@ -13,16 +13,16 @@ function useFavorite() {
     staleTime: 1000 * 60 * 2,
   });
 
-  const isFav = (id) => favorites.some((item) => item.movieId === id);
+  const isFav = (id) => favorites.some((item) => (item.movieId) === (id));
 
   const UpdateFavorite = async (movie) => {
-    const already = isFav(Number(movie.id));
-    // Optimistic update
-    queryClient.setQueryData(QUERY_KEY, (old = []) =>
+    const already = isFav(movie.id);
+  queryClient.setQueryData(QUERY_KEY, (old = []) =>
       already
-        ? old.filter((item) => item.movieId !== movie.id)
+        ? old.filter((item) => (item.movieId) !== movie.id)
         : [...old, { movieId: movie.id, ...movie }]
     );
+
     try {
       if (already) {
         await removeFavorite(movie.id);
@@ -30,7 +30,6 @@ function useFavorite() {
         await addFavorite(movie.id);
       }
     } catch {
-      // Rollback on error
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     }
   };
