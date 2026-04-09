@@ -1,62 +1,49 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import MovieCard from "../components/MovieCard";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
+import { ChevronLeft } from "lucide-react";
 import {
   fetchTopRatedMovies,
   fetchPopularMovies,
-  fetchUpcomingMovies
+  fetchUpcomingMovies,
 } from "../services/Movieapi.js";
 import Pagination from "../components/Pagination";
+import Footer from "../components/Footer";
+
+const CATEGORY_MAP = {
+  top_rated: { title: "Top Rated", fetchFn: fetchTopRatedMovies },
+  popular:   { title: "Popular",   fetchFn: fetchPopularMovies },
+  upcoming:  { title: "Upcoming",  fetchFn: fetchUpcomingMovies },
+};
 
 function Category() {
   const { category } = useParams();
   const navigate = useNavigate();
 
+  const { title = "Movies", fetchFn = fetchPopularMovies } =
+    CATEGORY_MAP[category] || {};
+
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
-  const goBack = () => navigate(-1);
-
-  /* ───────── Category Config (UNCHANGED) ───────── */
-  const getCategoryInfo = () => {
-    switch (category) {
-      case "top_rated":
-        return { title: "Top Rated", fetchFunction: fetchTopRatedMovies };
-      case "popular":
-        return { title: "Popular", fetchFunction: fetchPopularMovies };
-      case "upcoming":
-        return { title: "Upcoming", fetchFunction: fetchUpcomingMovies };
-      default:
-        return { title: "Movies", fetchFunction: fetchPopularMovies };
-    }
-  };
-
-  const { title, fetchFunction } = getCategoryInfo();
-
-  /* ───────── Fetch (UNCHANGED) ───────── */
   useEffect(() => {
-    const fetchMovies = async () => {
-      setLoading(true);
-      setError(null);
+    setCurrentPage(1);
+  }, [category]);
 
-      try {
-        const data = await fetchFunction(currentPage);
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetchFn(currentPage)
+      .then((data) => {
         setMovies(data.results || []);
-        setTotalPages(data.total_pages || 0);
-      } catch {
-        setError(`Failed to load ${title}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMovies();
-  }, [category, currentPage, fetchFunction]);
+        setTotalPages(Math.min(data.total_pages || 0, 500));
+      })
+      .catch(() => setError(`Failed to load ${title}`))
+      .finally(() => setLoading(false));
+  }, [category, currentPage, fetchFn, title]);
 
   const handlePageChange = (p) => {
     if (p >= 1 && p <= totalPages) {
@@ -66,128 +53,86 @@ function Category() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-base)", paddingTop: "80px" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-base)", paddingTop: "56px" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "40px 32px 80px" }}>
 
-        {/* ── Header ── */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          marginBottom: "48px"
-        }}>
+        {/* Breadcrumb */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "48px" }}>
           <button
-            onClick={goBack}
+            onClick={() => navigate(-1)}
             style={{
-              color: "var(--text-3)",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "13px"
+              display: "flex", alignItems: "center", gap: "6px",
+              background: "none", border: "none", cursor: "pointer",
+              color: "var(--text-3)", fontSize: "13px",
+              transition: "color 0.15s",
             }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-3)")}
           >
-            <ArrowLeftIcon /> Back
+            <ChevronLeft size={14} /> Back
           </button>
+          <span style={{ color: "var(--border-md)", fontSize: "13px" }}>/</span>
+          <span style={{ fontSize: "13px", color: "var(--text-2)" }}>{title}</span>
+        </div>
 
-          <span style={{ color: "var(--border-md)", fontSize: "14px" }}>/</span>
-
-          <h1 style={{
-            fontSize: "14px",
-            fontWeight: 500,
-            color: "var(--text-1)",
-            letterSpacing: "-0.01em"
-          }}>
+        {/* Page heading */}
+        <div style={{ marginBottom: "40px" }}>
+          <p className="section-label" style={{ marginBottom: "10px" }}>Browse</p>
+          <h1 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 300, letterSpacing: "-0.02em", color: "var(--text-1)", margin: 0 }}>
             {title}
           </h1>
         </div>
 
-        {/* ── Title ── */}
-        <div style={{ marginBottom: "48px", textAlign: "center" }}>
-          <h2 style={{
-            fontSize: "28px",
-            fontWeight: 600,
-            color: "var(--text-1)"
-          }}>
-            {title}
-          </h2>
-        </div>
-
-        {/* ── Loading ── */}
+        {/* Loading */}
         {loading && (
-          <div style={{
-            textAlign: "center",
-            padding: "80px 0",
-            color: "var(--text-3)"
-          }}>
-            Loading…
+          <div style={{ display: "flex", justifyContent: "center", padding: "80px 0" }}>
+            <div className="spinner" />
           </div>
         )}
 
-        {/* ── Error ── */}
+        {/* Error */}
         {error && !loading && (
           <div style={{ textAlign: "center", padding: "80px 0" }}>
-            <p style={{
-              color: "var(--text-3)",
-              marginBottom: "16px"
-            }}>
-              {error}
-            </p>
-
+            <p style={{ color: "var(--text-3)", marginBottom: "16px" }}>{error}</p>
             <button
               onClick={() => window.location.reload()}
-              style={{
-                padding: "8px 20px",
-                borderRadius: "6px",
-                border: "1px solid var(--border-md)",
-                background: "transparent",
-                color: "var(--text-2)",
-                cursor: "pointer"
-              }}
+              className="btn-ghost"
             >
               Try again
             </button>
           </div>
         )}
 
-        {/* ── Grid ── */}
+        {/* Grid */}
         {!loading && !error && (
           <>
             {movies.length > 0 ? (
               <div style={{
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-                gap: "16px"
+                gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))",
+                gap: "16px",
               }}>
-                {movies.map(m => (
+                {movies.map((m) => (
                   <div key={m.id} className="movie-card-wrap">
                     <MovieCard movie={m} />
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{
-                textAlign: "center",
-                padding: "80px 0",
-                color: "var(--text-3)"
-              }}>
-                No movies found
+              <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-3)" }}>
+                No movies found.
               </div>
             )}
 
-            {/* ── Pagination ── */}
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

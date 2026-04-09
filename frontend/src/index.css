@@ -1,27 +1,115 @@
 @import "@radix-ui/themes/styles.css";
 @import "tailwindcss";
 
+/* ── Design Tokens ─────────────────────────────────────── */
 :root {
-  --bg-base: #0b0b0c;
+  --bg-base:      #0b0b0c;
+  --bg-surface:   #111114;
+  --bg-elevated:  #18181c;
+
   --text-1: #ffffff;
   --text-2: #c7c7c7;
   --text-3: #8a8a8a;
-  --border: #1f1f22;
+
+  --border:    #1f1f22;
   --border-md: #2a2a2e;
-  --accent: #7c3aed;
+
+  --accent:     #7c3aed;
+  --accent-dim: rgba(124, 58, 237, 0.12);
+  --accent-hover: #9d65ff;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --transition: 0.2s ease;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+/* ── Reset / Base ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg-base);
+  color: var(--text-1);
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-.scrollbar-hide {
-  scrollbar-width: none;
+a { text-decoration: none; color: inherit; }
+
+/* ── Scrollbar ─────────────────────────────────────────── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { scrollbar-width: none; }
+
+/* ── Movie Card ────────────────────────────────────────── */
+.movie-card-wrap { transition: transform var(--transition); }
+.movie-card-wrap:hover { transform: translateY(-4px); }
+
+/* ── Shared Button Primitives ──────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  color: #0d0d10;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background var(--transition), transform var(--transition);
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
 }
 
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid var(--border-md);
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 400;
+  transition: border-color var(--transition), color var(--transition);
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
-.movie-card-wrap {
-  transition: transform 0.2s ease;
+/* ── Section Label ─────────────────────────────────────── */
+.section-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
 }
-.movie-card-wrap:hover {
-  transform: translateY(-4px);
+
+/* ── Card surface ──────────────────────────────────────── */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition);
 }
+.card:hover { border-color: var(--border-md); }
+
+/* ── Spinner ───────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--border-md);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes scrollPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }

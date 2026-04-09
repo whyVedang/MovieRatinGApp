@@ -1,172 +1,306 @@
-
-import { Link, Outlet, useSearchParams } from "react-router-dom";
-import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import * as Dialog from "@radix-ui/react-dialog";
-import { CaretDownIcon, MagnifyingGlassIcon, HamburgerMenuIcon, Cross2Icon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Search, Menu, X, Film, User, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import LogoutButton from "../auth/LogoutButton";
 
+/* ── Dropdown ──────────────────────────────────────────── */
+function DropdownItem({ to, label, hint }) {
+  return (
+    <Link
+      to={to}
+      style={{
+        position: "relative",
+        padding: "12px 16px",
+        borderRadius: "var(--radius-sm)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "2px",
+        transition: "background 0.15s ease",
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.05)")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+    >
+      <span style={{ fontSize: "13px", color: "var(--text-1)" }}>{label}</span>
+      <span style={{ fontSize: "11px", color: "var(--text-3)" }}>{hint}</span>
+    </Link>
+  );
+}
+
+function MoviesDropdown() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      style={{ position: "relative" }}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button style={{
+        display: "flex", alignItems: "center", gap: "4px",
+        fontSize: "13px", color: "var(--text-2)",
+        background: "none", border: "none", cursor: "pointer",
+        transition: "color 0.15s ease",
+      }}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-2)")}
+      >
+        Movies
+        <ChevronDown size={12} style={{
+          transition: "transform 0.2s",
+          transform: open ? "rotate(180deg)" : "rotate(0deg)",
+        }} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            style={{
+              position: "absolute", top: "calc(100% + 12px)", left: 0,
+              width: "220px", borderRadius: "var(--radius-md)",
+              padding: "6px",
+              background: "rgba(14,14,17,0.92)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid var(--border)",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.5)",
+            }}
+          >
+            <DropdownItem to="/category/top_rated" label="Top Rated" hint="Best of all time" />
+            <DropdownItem to="/category/popular" label="Popular" hint="Trending now" />
+            <DropdownItem to="/category/upcoming" label="Upcoming" hint="Releasing soon" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ── Navbar ────────────────────────────────────────────── */
 export default function Navbar() {
-    const [open, setOpen] = useState(false);
-    const [searchParams, setSearchParams] = useSearchParams();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+  const searchRef = useRef(null);
+  const navigate = useNavigate();
 
-    const handleSearchChange = (e) => {
-        setSearchParams({ search: e.target.value });
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (searchOpen && searchRef.current) {
+      setTimeout(() => searchRef.current?.focus(), 80);
+    }
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "Escape") { setSearchOpen(false); setQuery(""); }
     };
+    if (searchOpen) window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [searchOpen]);
 
-    return (
-        <div>
-            <nav className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-[#0a2540] to-[#1b314d] px-4 md:px-8 py-3 shadow-md">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    {/* Logo */}
-                    <a href="/" className="font-black text-2xl tracking-tight flex items-center space-x-2">
-                        <span className="bg-gradient-to-r from-[#635bff] to-[#00d4ff] bg-clip-text text-transparent">
-                            MovieHub
-                        </span>
-                    </a>
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setSearchOpen(false);
+    navigate(`/browse?search=${encodeURIComponent(query.trim())}`);
+    setQuery("");
+  };
 
-                    {/* Desktop Nav & Search */}
-                    <div className="hidden md:flex flex-1 items-center justify-center gap-8">
-                        {/* Navigation Menu */}
-                        <NavigationMenu.Root>
-                            <NavigationMenu.List className="flex gap-6">
-                                {/* Movies Dropdown */}
-                                <NavigationMenu.Item>
-                                    <NavigationMenu.Trigger className="flex items-center gap-1 font-medium text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-800 hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        Movies<CaretDownIcon className="text-gray-400" />
-                                    </NavigationMenu.Trigger>
-                                    <NavigationMenu.Content className="absolute mt-2 min-w-[220px] rounded-xl bg-gray-800 border border-gray-700 shadow-lg p-2 z-50">
-                                        <div className="flex flex-col">
-                                            <NavigationMenu.Link className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="/category/top_rated">
-                                                <span className="text-indigo-400">★</span> Top Rated
-                                            </NavigationMenu.Link>
-                                            <NavigationMenu.Link className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="/category/popular">
-                                                <span className="text-indigo-400">🔥</span> Popular
-                                            </NavigationMenu.Link>
-                                            <NavigationMenu.Link className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="/category/upcoming">
-                                                <span className="text-indigo-400">📅</span> Upcoming
-                                            </NavigationMenu.Link>
-                                            <div className="border-t border-gray-700 my-1"></div>
-                                            <NavigationMenu.Link className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="/category/all">
-                                                <span className="text-indigo-400">🔍</span> Browse All
-                                            </NavigationMenu.Link>
-                                        </div>
-                                    </NavigationMenu.Content>
-                                </NavigationMenu.Item>
-                                {/* TV Shows Dropdown */}
-                                {/* <NavigationMenu.Item>
-                                    <NavigationMenu.Trigger className="flex items-center gap-1 font-medium text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-800 hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        TV Shows <CaretDownIcon className="text-gray-400" />
-                                    </NavigationMenu.Trigger>
-                                    <NavigationMenu.Content className="absolute mt-2 min-w-[220px] rounded-xl bg-gray-800 border border-gray-700 shadow-lg p-2 z-50">
-                                        <div className="flex flex-col">
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
-                                                <span className="text-indigo-400">★</span> Top Rated
-                                            </a>
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
-                                                <span className="text-indigo-400">🔥</span> Popular
-                                            </a>
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
-                                                <span className="text-indigo-400">📅</span> New Releases
-                                            </a>
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
-                                                <span className="text-indigo-400">📺</span> On Air
-                                            </a>
-                                            <div className="border-t border-gray-700 my-1"></div>
-                                            <a className="px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition flex items-center gap-2" href="#">
-                                                <span className="text-indigo-400">🔍</span> Browse All
-                                            </a>
-                                        </div>
-                                    </NavigationMenu.Content>
-                                </NavigationMenu.Item> */}
-                                <div className="w-72">
-                                    <div className="relative w-full">
+  const navStyle = {
+    position: "fixed", top: 0, left: 0, width: "100%", zIndex: 50,
+    backdropFilter: "blur(20px)",
+    backgroundColor: scrolled ? "rgba(8,8,9,0.95)" : "rgba(8,8,9,0.5)",
+    borderBottom: scrolled ? "1px solid var(--border)" : "1px solid transparent",
+    transition: "background-color 0.3s ease, border-color 0.3s ease",
+  };
 
-                                        <input
-                                            className="bg-gray-800 w-full px-4 py-2 rounded-full text-gray-300 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                            placeholder="Search movies, TV shows"
-                                            type="text"
-                                            value={searchParams.get("search") || ""}
-                                            onChange={handleSearchChange}
-                                        />
-                                        <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-400">
-                                            <MagnifyingGlassIcon className="w-5 h-5" />
-                                        </button>
+  return (
+    <div>
+      {/* ── Navbar ── */}
+      <nav style={navStyle}>
+        <div style={{
+          maxWidth: "1280px", margin: "0 auto",
+          padding: "0 24px", height: "56px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          {/* Logo */}
+          <Link to="/browse" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Film size={15} style={{ color: "var(--accent)" }} />
+            <span style={{
+              fontSize: "12px", letterSpacing: "0.22em",
+              textTransform: "uppercase", color: "var(--text-1)", fontWeight: 500,
+            }}>
+              CineVault
+            </span>
+          </Link>
 
-                                    </div>
-                                </div>
-                                {/* Favourites */}
-                                <NavigationMenu.Item>
-                                    <NavigationMenu.Trigger
-                                        className="flex items-center gap-1 font-medium text-gray-300 px-3 py-2 rounded-lg hover:bg-gray-800 hover:text-indigo-400 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    >
-                                        <Link to="/favourites" className="flex items-center gap-1">
-                                            Favourites
-                                        </Link>
-                                    </NavigationMenu.Trigger>
-                                </NavigationMenu.Item>
+          {/* Desktop nav */}
+          <div className="hidden md:flex" style={{ alignItems: "center", gap: "32px" }}>
+            <MoviesDropdown />
+            <Link to="/favourites" style={{
+              fontSize: "13px", color: "var(--text-2)",
+              transition: "color 0.15s ease",
+            }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-2)")}
+            >
+              Favourites
+            </Link>
+          </div>
 
-                            </NavigationMenu.List>
-                        </NavigationMenu.Root>
-                        {/* Search Bar */}
+          {/* Right */}
+          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+            <button
+              onClick={() => setSearchOpen(true)}
+              style={{ background: "none", border: "none", cursor: "pointer",
+                color: "var(--text-2)", transition: "color 0.15s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-2)")}
+            >
+              <Search size={15} />
+            </button>
 
-                    </div>
+            <Link to="/login" style={{ color: "var(--text-2)", transition: "color 0.15s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-2)")}
+            >
+              <User size={15} />
+            </Link>
 
-                    {/* Profile Button (always visible) */}
-                    <button className="w-8 h-8 rounded-full mr-5  bg-gray-800 border border-gray-700 flex items-center justify-center text-indigo-400 hover:border-indigo-500 transition-colors ml-2 md:ml-6">
-                        <Link to='/login'>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 5C13.66 5 15 6.34 15 8C15 9.66 13.66 11 12 11C10.34 11 9 9.66 9 8C9 6.34 10.34 5 12 5ZM12 19.2C9.5 19.2 7.29 17.92 6 15.98C6.03 13.99 10 12.9 12 12.9C13.99 12.9 17.97 13.99 18 15.98C16.71 17.92 14.5 19.2 12 19.2Z" fill="currentColor" />
-                            </svg>
-                        </Link>
-                    </button>
-                    <LogoutButton />
+            <div className="hidden md:block">
+              <LogoutButton />
+            </div>
 
-                    {/* Hamburger for mobile */}
-                    <div className="md:hidden">
-                        <Dialog.Root open={open} onOpenChange={setOpen}>
-                            <Dialog.Trigger asChild>
-                                <button className="ml-2 p-2 rounded-md text-gray-300 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <HamburgerMenuIcon className="w-6 h-6" />
-                                </button>
-                            </Dialog.Trigger>
-                            <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-                            <Dialog.Content className="fixed top-0 right-0 w-[85vw] max-w-xs h-full bg-[#0a2540] z-50 shadow-lg flex flex-col">
-                                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
-                                    <span className="font-black text-xl bg-gradient-to-r from-[#635bff] to-[#00d4ff] bg-clip-text text-transparent">
-                                        Movies
-                                    </span>
-                                    <Dialog.Close asChild>
-                                        <button className="p-2 rounded-md text-gray-300 hover:bg-gray-800">
-                                            <Cross2Icon className="w-5 h-5" />
-                                        </button>
-                                    </Dialog.Close>
-                                </div>
-                                <div className="flex-1 flex flex-col gap-2 px-4 py-4">
-                                    {/* Nav Links */}
-                                    <a className="py-2 px-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition" href="#">Movies</a>
-                                    <a className="py-2 px-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition" href="#">TV Shows</a>
-                                    <a className="py-2 px-2 rounded text-gray-300 hover:bg-gray-700 hover:text-indigo-400 transition" href="#">Watchlist</a>
-                                    {/* Search */}
-                                    <div className="mt-4">
-                                        <div className="relative w-full">
-                                            <input
-                                                className="bg-gray-800 w-full px-4 py-2 rounded-full text-gray-300 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                                placeholder="Search movies, TV shows, actors..."
-                                                type="text"
-                                            />
-                                            <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-400">
-                                                <MagnifyingGlassIcon className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Dialog.Content>
-                        </Dialog.Root>
-                    </div>
-                </div>
-            </nav>
-            <Outlet />
+            <button
+              className="md:hidden"
+              onClick={() => setMobileOpen(true)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-2)" }}
+            >
+              <Menu size={17} />
+            </button>
+          </div>
         </div>
-    );
+      </nav>
+
+      {/* ── Search Overlay ── */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 100,
+              backgroundColor: "rgba(8,8,9,0.97)",
+              backdropFilter: "blur(24px)",
+            }}
+          >
+            <div style={{ maxWidth: "560px", margin: "0 auto", paddingTop: "120px", padding: "120px 24px 0" }}>
+              <form onSubmit={handleSearchSubmit}>
+                <input
+                  ref={searchRef}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search for a film..."
+                  style={{
+                    width: "100%", fontSize: "28px",
+                    background: "transparent",
+                    border: "none", borderBottom: "1px solid var(--border-md)",
+                    outline: "none", color: "var(--text-1)",
+                    paddingBottom: "12px",
+                    fontFamily: "inherit",
+                  }}
+                />
+              </form>
+              <p style={{ fontSize: "12px", color: "var(--text-3)", marginTop: "12px" }}>
+                Press Enter to search · Esc to close
+              </p>
+            </div>
+            <button
+              onClick={() => { setSearchOpen(false); setQuery(""); }}
+              style={{
+                position: "absolute", top: "24px", right: "24px",
+                background: "none", border: "none", cursor: "pointer",
+                color: "var(--text-3)", transition: "color 0.15s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-3)")}
+            >
+              <X size={20} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Mobile Drawer ── */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 40 }}
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.div
+              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.25 }}
+              style={{
+                position: "fixed", right: 0, top: 0, height: "100%", width: "280px",
+                zIndex: 50, padding: "24px",
+                backgroundColor: "var(--bg-surface)",
+                borderLeft: "1px solid var(--border)",
+                display: "flex", flexDirection: "column",
+              }}
+            >
+              <button
+                onClick={() => setMobileOpen(false)}
+                style={{ background: "none", border: "none", cursor: "pointer",
+                  color: "var(--text-3)", alignSelf: "flex-end" }}
+              >
+                <X size={18} />
+              </button>
+
+              <div style={{ marginTop: "32px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {[
+                  { to: "/category/top_rated", label: "Top Rated" },
+                  { to: "/category/popular", label: "Popular" },
+                  { to: "/category/upcoming", label: "Upcoming" },
+                  { to: "/favourites", label: "Favourites" },
+                ].map(({ to, label }) => (
+                  <Link
+                    key={to} to={to}
+                    onClick={() => setMobileOpen(false)}
+                    style={{
+                      padding: "12px 16px", borderRadius: "var(--radius-sm)",
+                      fontSize: "14px", color: "var(--text-1)",
+                      transition: "background 0.15s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-elevated)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+
+              <div style={{ marginTop: "auto" }}>
+                <LogoutButton />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <Outlet />
+    </div>
+  );
 }

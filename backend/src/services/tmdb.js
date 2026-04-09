@@ -3,7 +3,6 @@ import dotenv from "dotenv"
 dotenv.config()
 
 const API = process.env.TMDB_APIKEY
-const AUTHAPI = process.env.TMDB_AUTHKEY
 const BASE_URL = 'https://api.themoviedb.org/3'
 
 if (!API) {
@@ -12,6 +11,7 @@ if (!API) {
 
 const fetchFromTMDB = async (endpoint) => {
   try {
+    console.log(API)
     const res = await fetch(`${BASE_URL}${endpoint}&api_key=${API}`);
 
     if (!res.ok) {
