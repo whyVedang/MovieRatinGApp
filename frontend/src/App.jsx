@@ -6,18 +6,25 @@ import NotFound from "./Pages/PageNotFound";
 import Navbar from "./components/NavBar";
 import Category from "./Pages/Category";
 import Auth from "./auth/auth";
+import LandingPage from "./Pages/LandingPage";
 
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route path="/" element={<Navbar />}>
-        <Route index element={<Home />} />
-        <Route path="/category/:category" element={<Category />} />
-        <Route path="/favourites" element={<Favourite />} />
-        <Route path="/login" element={<Auth />} />
-        <Route path="MovieDetail/:id" element={<MovieDetail />} />
-        <Route path="*" element={<NotFound />} />
-      </Route>
+      <>
+        {/* Landing page — standalone, no navbar */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* App shell with navbar */}
+        <Route element={<Navbar />}>
+          <Route path="/browse" element={<Home />} />
+          <Route path="/category/:category" element={<Category />} />
+          <Route path="/favourites" element={<Favourite />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/MovieDetail/:id" element={<MovieDetail />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </>
     )
   );
 

@@ -1,342 +1,199 @@
 import { Link, useSearchParams } from "react-router-dom";
 import MovieCard from "../components/MovieCard";
-import { ChevronLeftIcon, ChevronRightIcon, StarFilledIcon, ClockIcon } from "@radix-ui/react-icons";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
-import { searchMovies, fetchPopularMovies, fetchTopratedMovies, fetchUpcomingMovies } from "../services/api";
+import {
+  fetchSearchMovies,
+  fetchPopularMovies,
+  fetchTopRatedMovies,
+  fetchUpcomingMovies,
+} from "../services/Movieapi.js";
+import Footer from "../components/Footer";
+
+function MovieRow({ title, movies, rowRef, onScrollLeft, onScrollRight, categoryPath }) {
+  return (
+    <div style={{ marginBottom: "56px" }}>
+      {/* Row header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+        <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--text-1)", letterSpacing: "-0.01em", margin: 0 }}>
+          {title}
+        </h2>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <Link
+            to={categoryPath}
+            style={{ fontSize: "12px", color: "var(--text-3)", transition: "color 0.15s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-3)")}
+          >
+            View all →
+          </Link>
+          <button onClick={onScrollLeft} style={scrollBtnStyle}>
+            <ChevronLeft size={14} />
+          </button>
+          <button onClick={onScrollRight} style={scrollBtnStyle}>
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      </div>
+
+      {/* Horizontal scroll row */}
+      <div
+        ref={rowRef}
+        className="scrollbar-hide"
+        style={{ display: "flex", gap: "14px", overflowX: "auto" }}
+      >
+        {movies.map((m) => (
+          <div key={m.id} style={{ flexShrink: 0, width: "160px" }}>
+            <MovieCard movie={m} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const scrollBtnStyle = {
+  width: "28px", height: "28px",
+  borderRadius: "50%",
+  border: "1px solid var(--border-md)",
+  background: "transparent",
+  color: "var(--text-2)",
+  cursor: "pointer",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  transition: "border-color 0.15s, color 0.15s",
+};
 
 function Home() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const searchTerm = searchParams.get("search") || "";
 
-  // State management for API data - separate states for different categories
-  const [topRatedMovies, setTopRatedMovies] = useState([]);
-  const [popularMovies, setPopularMovies] = useState([]);
-  const [upcomingMovies, setUpcomingMovies] = useState([]);
+  const [topRated, setTopRated] = useState([]);
+  const [popular, setPopular] = useState([]);
+  const [upcoming, setUpcoming] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [loading, setLoading] = useState({
-    topRated: true,
-    popular: true,
-    upcoming: true,
-    search: false
-  });
-  const [error, setError] = useState(null);
+  const [loadingRows, setLoadingRows] = useState(true);
+  const [loadingSearch, setLoadingSearch] = useState(false);
 
-  // References for scroll containers
   const topRatedRef = useRef(null);
   const popularRef = useRef(null);
   const upcomingRef = useRef(null);
 
-  // Fetch top-rated movies
+  const scroll = (ref, dir) =>
+    ref.current?.scrollBy({ left: dir === "left" ? -340 : 340, behavior: "smooth" });
+
+  /* ── Initial load — all three rows in one shot ── */
   useEffect(() => {
-    const getTopRatedMovies = async () => {
-      try {
-        const data = await fetchTopratedMovies(1);
-        await setTopRatedMovies(data.results || []);
-      }
-      catch (error) {
-        console.error("Error fetching top rated movies:", error);
-        setError("Failed to load top rated movies");
-      }
-      finally {
-        setLoading(prev => ({ ...prev, topRated: false }));
-      }
-    };
-    getTopRatedMovies();
+    setLoadingRows(true);
+    Promise.all([
+      fetchTopRatedMovies(1),
+      fetchPopularMovies(1),
+      fetchUpcomingMovies(1),
+    ])
+      .then(([tr, pop, up]) => {
+        setTopRated(tr.results || []);
+        setPopular(pop.results || []);
+        setUpcoming(up.results || []);
+      })
+      .finally(() => setLoadingRows(false));
   }, []);
 
-  // Fetch popular movies
+  /* ── Search ── */
   useEffect(() => {
-    const getPopularMovies = async () => {
+    if (!searchTerm) { setSearchResults([]); return; }
+    const t = setTimeout(async () => {
+      setLoadingSearch(true);
       try {
-        const data = await fetchPopularMovies(1);
-        await setPopularMovies(data.results || []);
-      }
-      catch (error) {
-        console.error("Error fetching popular movies:", error);
-        setError("Failed to load popular movies");
-      }
-      finally {
-        setLoading(prev => ({ ...prev, popular: false }));
-      }
-    };
-    getPopularMovies();
-  }, []);
-
-  // Fetch upcoming movies
-  useEffect(() => {
-    const getUpcomingMovies = async () => {
-      try {
-        const data = await fetchUpcomingMovies(1);
-        await setUpcomingMovies(data.results || []);
-      }
-      catch (error) {
-        console.error("Error fetching upcoming movies:", error);
-        setError("Failed to load upcoming movies");
-      }
-      finally {
-        setLoading(prev => ({ ...prev, upcoming: false }));
-      }
-    };
-    getUpcomingMovies();
-  }, []);
-
-  // const handleCLick = (movie) => {
-  //   console.log("Movie clicked:", movie);
-  // }
-  // Search functionality
-  useEffect(() => {
-    const performSearch = async () => {
-      if (!searchTerm) {
+        const data = await fetchSearchMovies(searchTerm);
+        setSearchResults(data.results || []);
+      } catch (err) { 
+        console.error("Search error:", err);
         setSearchResults([]);
-        return;
       }
-
-      setLoading(prev => ({ ...prev, search: true }));
-
-      try {
-        const results = await searchMovies(searchTerm);
-        setSearchResults(results);
-      } catch (error) {
-        console.error("Error searching movies:", error);
-        setError("Failed to search movies");
-      } finally {
-        setLoading(prev => ({ ...prev, search: false }));
-      }
-    };
-
-    // Debounce search to avoid too many API calls
-    const timeoutId = setTimeout(performSearch, 500);
-    return () => clearTimeout(timeoutId);
+      finally { setLoadingSearch(false); }
+    }, 400);
+    return () => clearTimeout(t);
   }, [searchTerm]);
 
-  // Scroll handlers for horizontal scrolling
-  const scroll = (ref, direction) => {
-    if (ref.current) {
-      const scrollAmount = direction === 'left' ? -300 : 300;
-      ref.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
-
-  // Check if all initial data is still loading
-  const isInitialLoading = loading.topRated && loading.popular && loading.upcoming;
-
-  if (isInitialLoading) {
-    return (
-      <div className="bg-gray-900 min-h-screen text-white flex items-center justify-center">
-        <p className="text-xl">Loading movies...</p>
-      </div>
-    );
-  }
-
-  if (error && !topRatedMovies.length && !popularMovies.length && !upcomingMovies.length) {
-    return (
-      <div className="bg-gray-900 min-h-screen text-white flex items-center justify-center">
-        <p className="text-xl text-red-400">Error: {error}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="bg-gray-900 min-h-screen pt-25 text-white py-8 px-4 md:px-8">
-      <div className="mb-12 text-center">
-        <h1 className="text-3xl md:text-5xl font-black bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent mb-3">
-          Discover Movies
-        </h1>
-        <p className="text-gray-400 max-w-2xl mx-auto mb-8">
-          Your ultimate destination for exploring the best of cinema
-        </p>
+    <div style={{ minHeight: "100vh", background: "var(--bg-base)", paddingTop: "56px" }}>
+      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 32px" }}>
 
-      </div>
-
-      {/* Search Results */}
-      {searchTerm && (
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold mb-6 flex items-center">
-            <span className="mr-2">Search Results for:</span>
-            <span className="text-indigo-400">"{searchTerm}"</span>
-            {loading.search && <span className="ml-3 text-sm text-gray-400">(Loading...)</span>}
-          </h2>
-
-          {!loading.search && searchResults.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {searchResults.map((movie) => (
-                <MovieCard key={movie.id} movie={movie} />
-              ))}
-            </div>
-          ) : !loading.search ? (
-            <div className="text-center py-12 bg-gray-800/50 rounded-xl">
-              <p className="text-gray-400 text-lg">No results found for "{searchTerm}"</p>
-              <p className="text-gray-500 mt-2">Try a different search term</p>
-            </div>
-          ) : null}
-        </div>
-      )}
-
-      <div className="mb-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center">
-            <StarFilledIcon className="mr-2 text-yellow-400" />
-            Top Rated Movies
-          </h2>
-          <div className="flex items-center space-x-4">
-            {/* View All Button */}
-            <Link
-              to="/category/top_rated"
-              className="text-sm text-indigo-400 hover:text-indigo-300 transition"
-            >
-              View All
-            </Link>
-            {/* Scroll Buttons */}
-            <div className="flex space-x-2">
-              <button
-                onClick={() => scroll(topRatedRef, 'left')}
-                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
-              >
-                <ChevronLeftIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => scroll(topRatedRef, 'right')}
-                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
-              >
-                <ChevronRightIcon className="w-5 h-5" />
-              </button>
-            </div>
+        {/* ── Hero text (no search) ── */}
+        {!searchTerm && !loadingRows && (
+          <div style={{ padding: "56px 0 48px" }}>
+            <p className="section-label" style={{ marginBottom: "12px" }}>Film Discovery</p>
+            <h1 style={{
+              fontSize: "clamp(36px, 5vw, 72px)", fontWeight: 300,
+              letterSpacing: "-0.03em", lineHeight: 1.05,
+              color: "var(--text-1)", margin: "0 0 16px",
+            }}>
+              Discover Movies
+            </h1>
+            <p style={{ fontSize: "14px", color: "var(--text-3)", maxWidth: "340px", margin: 0 }}>
+              Your destination for exploring the best of cinema.
+            </p>
           </div>
-        </div>
+        )}
 
-        <div
-          ref={topRatedRef}
-          className="flex overflow-x-auto space-x-6 pb-6 hide-scrollbar"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          {topRatedMovies.length > 0 ? (
-            topRatedMovies.map((movie) => (
-              <div key={movie.id} className="flex-none w-64">
-                <MovieCard movie={movie} />
+        {/* ── Search results ── */}
+        {searchTerm && (
+          <div style={{ padding: "48px 0" }}>
+            <h2 style={{ color: "var(--text-1)", fontWeight: 500, marginBottom: "28px", fontSize: "18px" }}>
+              Results for "{searchTerm}"
+            </h2>
+            {loadingSearch ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: "48px 0" }}>
+                <div className="spinner" />
               </div>
-            ))
-          ) : (
-            <div className="flex-none w-full text-center py-12">
-              <p className="text-gray-400">No top rated movies available</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Popular Section */}
-      <div className="mb-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center">
-            <span className="mr-2 text-orange-500">🔥</span>
-            Popular Movies
-          </h2>
-          <div className="flex items-center space-x-4">
-            {/* View All Button */}
-            <Link
-              to="/category/popular"
-              className="text-sm text-indigo-400 hover:text-indigo-300 transition"
-            >
-              View All
-            </Link>
-            {/* Scroll Buttons */}
-            <div className="flex space-x-2">
-              <button
-                onClick={() => scroll(popularRef, 'left')}
-                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
-              >
-                <ChevronLeftIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => scroll(popularRef, 'right')}
-                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
-              >
-                <ChevronRightIcon className="w-5 h-5" />
-              </button>
-            </div>
+            ) : searchResults.length > 0 ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))", gap: "16px" }}>
+                {searchResults.map((m) => <MovieCard key={m.id} movie={m} />)}
+              </div>
+            ) : (
+              <p style={{ color: "var(--text-3)" }}>No results found.</p>
+            )}
           </div>
-        </div>
+        )}
 
-        <div
-          ref={popularRef}
-          className="flex overflow-x-auto space-x-6 pb-6 hide-scrollbar"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          {popularMovies.length > 0 ? (
-            popularMovies.map((movie) => (
-              <div key={movie.id} className="flex-none w-64">
-                <MovieCard movie={movie} />
+        {/* ── Movie rows ── */}
+        {!searchTerm && (
+          <>
+            {loadingRows ? (
+              <div style={{ display: "flex", justifyContent: "center", padding: "96px 0" }}>
+                <div className="spinner" />
               </div>
-            ))
-          ) : (
-            <div className="flex-none w-full text-center py-12">
-              <p className="text-gray-400">No popular movies available</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Upcoming Section */}
-      <div className="mb-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center">
-            <ClockIcon className="mr-2 text-blue-400" />
-            Upcoming Movies
-          </h2>
-          <div className="flex items-center space-x-4">
-            {/* View All Button */}
-            <Link
-              to="/category/upcoming"
-              className="text-sm text-indigo-400 hover:text-indigo-300 transition"
-            >
-              View All
-            </Link>
-            {/* Scroll Buttons */}
-            <div className="flex space-x-2">
-              <button
-                onClick={() => scroll(upcomingRef, 'left')}
-                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
-              >
-                <ChevronLeftIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => scroll(upcomingRef, 'right')}
-                className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition"
-              >
-                <ChevronRightIcon className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div
-          ref={upcomingRef}
-          className="flex overflow-x-auto space-x-6 pb-6 hide-scrollbar"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          {upcomingMovies.length > 0 ? (
-            upcomingMovies.map((movie) => (
-              <div key={movie.id} className="flex-none w-64">
-                <MovieCard movie={movie} />
+            ) : (
+              <div style={{ paddingBottom: "64px" }}>
+                <MovieRow
+                  title="Top Rated"
+                  movies={topRated}
+                  rowRef={topRatedRef}
+                  onScrollLeft={() => scroll(topRatedRef, "left")}
+                  onScrollRight={() => scroll(topRatedRef, "right")}
+                  categoryPath="/category/top_rated"
+                />
+                <MovieRow
+                  title="Popular"
+                  movies={popular}
+                  rowRef={popularRef}
+                  onScrollLeft={() => scroll(popularRef, "left")}
+                  onScrollRight={() => scroll(popularRef, "right")}
+                  categoryPath="/category/popular"
+                />
+                <MovieRow
+                  title="Upcoming"
+                  movies={upcoming}
+                  rowRef={upcomingRef}
+                  onScrollLeft={() => scroll(upcomingRef, "left")}
+                  onScrollRight={() => scroll(upcomingRef, "right")}
+                  categoryPath="/category/upcoming"
+                />
               </div>
-            ))
-          ) : (
-            <div className="flex-none w-full text-center py-12">
-              <p className="text-gray-400">No upcoming movies available</p>
-            </div>
-          )}
-        </div>
+            )}
+          </>
+        )}
       </div>
-
-      {/* Add this CSS for hiding scrollbars */}
-      <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+      <Footer />
     </div>
   );
 }
