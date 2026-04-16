@@ -24,6 +24,9 @@ model Review {
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
   @@unique([userId, movieId])
+
+  @@index([userId])
+  @@index([movieId])
 }
 
 model Favorite {
@@ -32,4 +35,7 @@ model Favorite {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([movieId])
 }

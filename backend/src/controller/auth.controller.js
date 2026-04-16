@@ -73,3 +73,26 @@ export const logout = (req, res) => {
     res.clearCookie('token')
     res.status(200).json({ message: "Logged Out" })
 }
+
+export const ME= async (req,res)=>{
+    try{
+        const userId=req.user.id
+
+        const user=await prisma.user.findUnique({
+            where: {id:userId},
+            select: {
+                id: true,
+                username: true}
+        })
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json(user);
+    }
+    catch(err){
+       console.log(err)
+        res.status(500).json({ message: "Internal server error" }) 
+    }
+}

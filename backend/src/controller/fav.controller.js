@@ -43,11 +43,9 @@ export const removeFavorite = (async (req, res) => {
         const MovieId = parseInt(movieId, 10);
         const userId = req.user.id;
 
-        const result = await prisma.favorite.deleteMany({
+        const result = await prisma.favorite.delete({
             where: {
-                movieId: MovieId,
-                userId: userId
-            }
+             userId_movieId: { userId, MovieId }            }
         });
         if (result.count === 0) {
             return res.status(404).json({ message: "Favorite not found" });
@@ -55,6 +53,9 @@ export const removeFavorite = (async (req, res) => {
 
         res.status(200).json({ message: "Favorite removed" });
     } catch (error) {
+        if (error.code === 'P2025') {
+            return res.status(404).json({ message: "Favorite not found" });
+        }
         console.error("Remove favorite error:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }

@@ -8,6 +8,11 @@ import favRouter from "./routes/favorite.router.js";
 import reviewRouter from "./routes/review.router.js";
 import movieRouter from "./routes/movie.router.js";
 
+
+if (!process.env.JWT_SECRET || !process.env.TMDB_APIKEY) {
+    console.error("FATAL ERROR: JWT_SECRET or TMDB API is not defined in .env");
+    process.exit(1); // Kill server 
+}
 const app = express();
 
 app.use(express.json());
@@ -17,6 +22,7 @@ app.use(cors({
   origin: "http://localhost:5173",
   credentials: true
 }));
+
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/favorite", favRouter);
