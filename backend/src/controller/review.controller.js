@@ -1,3 +1,4 @@
+import * as tmdbService from "../services/tmdb.js";
 import prisma from "../lib/prisma.js"
 
 export const writeReview = async (req, res) => {
@@ -33,8 +34,10 @@ export const writeReview = async (req, res) => {
     }
 }
 
-export const getAllUserReviews = async (req, res) => {
+export const getUserAllReviews = async (req, res) => {
     try {
+
+        const userId = req.user.id
         const reviews = await prisma.review.findMany({
             where: { userId },
             include: {
@@ -58,7 +61,7 @@ export const getAllUserReviews = async (req, res) => {
 
 export const getUserReview = async (req, res) => {
     try {
-        const { movieId } = parseInt(req.params.movieId)
+        const {movieId}  = parseInt(req.params.movieId)
         const userId = req.user.id
 
         const review = await prisma.review.findFirst({
@@ -75,22 +78,16 @@ export const getUserReview = async (req, res) => {
 
 export const getMovieReviews = async (req, res) => {
     try {
-        const movieId = parseInt(req.params.movieId)
+        
+        const id = req.params.id;
 
-        const reviews = await prisma.review.findMany({
-            where: { movieId },
-            include: {
-                user: {
-                    select: { username: true }
-                }
-            }
-        })
-
-        if (!reviews.length) {
-            return res.status(404).json({ message: "No reviews for this movie" })
+        if (!id) {
+            throw new AppError("Movie ID is required", 400);
         }
 
-        res.status(200).json(reviews)
+        const data = await tmdbService.fetchMovieReviews(id);
+
+        res.status(200).json(data);
 
     } catch (error) {
         console.log(error)
@@ -100,7 +97,7 @@ export const getMovieReviews = async (req, res) => {
 
 export const deleteReview = async (req, res) => {
     try {
-        const { reviewId } = req.body
+        const reviewId = parseInt(req.params.reviewId)
         const userId = req.user.id
 
         const review = await prisma.review.findUnique({

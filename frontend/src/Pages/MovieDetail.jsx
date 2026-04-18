@@ -6,7 +6,8 @@ import {
   fetchMovieDetails,
   fetchMovieRecommendations
 } from "../services/Movieapi.js";
-import { getReview, writeReview } from "../services/Review.js";
+
+import { getMovieReviews, writeReview } from "../services/Review.js";
 import { motion } from "framer-motion";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import {
@@ -133,7 +134,7 @@ function MovieDetail() {
       setRating(0);
       setContent("");
       setErrorMsg("");
-      getReview(id).then(setReviews).catch(console.error);
+      getMovieReviews(id).then(setReviews).catch(console.error);
     },
     onError: (err) => {
       setErrorMsg(err.message || "Failed to post review");
@@ -146,7 +147,7 @@ function MovieDetail() {
     Promise.all([
       fetchMovieDetails(id),
       fetchMovieCredits(id),
-      getReview(id),
+      getMovieReviews(id),
       fetchMovieRecommendations(id),
     ])
       .then(([det, cred, rev, rec]) => {

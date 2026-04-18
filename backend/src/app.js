@@ -5,7 +5,6 @@ import { errorHandler } from "./middleware/err.middleware.js";
 
 import authRouter from "./routes/auth.router.js";
 import favRouter from "./routes/favorite.router.js";
-import reviewRouter from "./routes/review.router.js";
 import movieRouter from "./routes/movie.router.js";
 
 import client from "./redis/redis.js"
@@ -27,7 +26,6 @@ app.use(cors({
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/favorite", favRouter);
-app.use("/api/v1/review", reviewRouter);
 app.use("/api/v1/movies", movieRouter);
 
 app.get("/api/health", (req, res) => {

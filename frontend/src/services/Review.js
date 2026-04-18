@@ -1,7 +1,7 @@
 const API=import.meta.env.VITE_BACKENDAPI
 
 export const writeReview= async ({movieId,rating,content})=>{
-    const res=await fetch(`${API}/review`,{
+    const res=await fetch(`${API}/movies/${movieId}/reviews`,{
         method:"POST",
         headers:{'Content-Type': 'application/json'},
         body:
@@ -22,10 +22,25 @@ export const writeReview= async ({movieId,rating,content})=>{
     return res.json();
 }
 
-export const getReview=async(movieId)=>{
-    const res=await fetch(`${API}/review/${movieId}`, {
+export const getMovieReviews = async (movieId) => {
+    const res = await fetch(`${API}/movies/${movieId}/reviews`)
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch reviews")
+    }
+
+    return res.json()
+}
+
+
+export const getMyReview = async (movieId) => {
+    const res = await fetch(`${API}/movies/${movieId}/reviews/me`, {
         credentials: "include"
-    });
-    if(!res.ok) throw new Error("Failed to fetch reviews")
+    })
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch your review")
+    }
+
     return res.json()
 }
