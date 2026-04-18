@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post('/', tokenVerify ,validate(reviewSchema), writeReview);
 router.delete('/:reviewId', tokenVerify , deleteReview);
-router.get('/:movieId',tokenVerify, getReview);
-router.get('/',tokenVerify, getAllReviews);
+router.get('/:movieId', getAllReviews);
+router.get('/:movieId/:userId',tokenVerify, getAllReviews);
 
 export default router;

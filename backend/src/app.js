@@ -8,6 +8,7 @@ import favRouter from "./routes/favorite.router.js";
 import reviewRouter from "./routes/review.router.js";
 import movieRouter from "./routes/movie.router.js";
 
+import client from "./redis/redis.js"
 
 if (!process.env.JWT_SECRET || !process.env.TMDB_APIKEY) {
     console.error("FATAL ERROR: JWT_SECRET or TMDB API is not defined in .env");

@@ -33,10 +33,8 @@ export const writeReview = async (req, res) => {
     }
 }
 
-export const getAllReviews = async (req, res) => {
+export const getAllUserReviews = async (req, res) => {
     try {
-        const userId = req.user.id
-
         const reviews = await prisma.review.findMany({
             where: { userId },
             include: {
@@ -58,7 +56,7 @@ export const getAllReviews = async (req, res) => {
     }
 }
 
-export const getReview = async (req, res) => {
+export const getUserReview = async (req, res) => {
     try {
         const { movieId } = parseInt(req.params.movieId)
         const userId = req.user.id
@@ -68,6 +66,31 @@ export const getReview = async (req, res) => {
         })
 
         res.status(200).json(review)
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+}
+
+export const getMovieReviews = async (req, res) => {
+    try {
+        const movieId = parseInt(req.params.movieId)
+
+        const reviews = await prisma.review.findMany({
+            where: { movieId },
+            include: {
+                user: {
+                    select: { username: true }
+                }
+            }
+        })
+
+        if (!reviews.length) {
+            return res.status(404).json({ message: "No reviews for this movie" })
+        }
+
+        res.status(200).json(reviews)
 
     } catch (error) {
         console.log(error)

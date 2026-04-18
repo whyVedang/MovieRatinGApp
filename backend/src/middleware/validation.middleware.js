@@ -1,22 +1,18 @@
-export const validate=(schema)=>{
-    
-    return (req,res,next)=>{
-
-        try{
+export const validate = (schema) => {
+    return (req, res, next) => {
+        try {
             schema.parse({
-                body:req.body,
+                body: req.body,
                 query: req.query,
                 params: req.params,
             });
             next();
-        }
-        catch(err)
-        {
+        } catch (err) {
             if (err.issues) {
                 const errorMessages = err.issues.map((error) => {
                     return `${error.path.join('.')} - ${error.message}`;
                 });
-                
+
                 return res.status(400).json({
                     message: "Validation Failed",
                     errors: errorMessages
@@ -28,6 +24,5 @@ export const validate=(schema)=>{
                 error: err.message
             });
         }
-    }
-}
-    
+    };
+};
