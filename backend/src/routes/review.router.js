@@ -11,8 +11,4 @@ router.post('/', tokenVerify ,validate(reviewSchema), writeReview);
 
 router.delete('/:reviewId', tokenVerify , deleteReview);
 
-router.get('/me', tokenVerify, getUserReview);
-
-router.get('/user', tokenVerify, getUserAllReviews);
-
 export default router;

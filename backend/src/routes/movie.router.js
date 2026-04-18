@@ -19,4 +19,5 @@ router.get("/:id/recommendations", MovieRecommendations);
 
 
 router.use("/:id/reviews", reviewRouter)
+
 export default router;

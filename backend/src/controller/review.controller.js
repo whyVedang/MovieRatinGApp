@@ -97,7 +97,7 @@ export const getMovieReviews = async (req, res) => {
 
 export const deleteReview = async (req, res) => {
     try {
-        const reviewId = parseInt(req.params.reviewId)
+        const reviewId = req.params.reviewId
         const userId = req.user.id
 
         const review = await prisma.review.findUnique({

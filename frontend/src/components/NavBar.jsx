@@ -155,14 +155,26 @@ export default function Navbar() {
             >
               Favourites
             </Link>
+            <Link to="/reviews" style={{
+              fontSize: "13px", color: "var(--text-2)",
+              transition: "color 0.15s ease",
+            }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-2)")}
+            >
+              Reviews
+            </Link>
           </div>
+
 
           {/* Right */}
           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
             <button
               onClick={() => setSearchOpen(true)}
-              style={{ background: "none", border: "none", cursor: "pointer",
-                color: "var(--text-2)", transition: "color 0.15s" }}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                color: "var(--text-2)", transition: "color 0.15s"
+              }}
               onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
               onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-2)")}
             >
@@ -263,8 +275,10 @@ export default function Navbar() {
             >
               <button
                 onClick={() => setMobileOpen(false)}
-                style={{ background: "none", border: "none", cursor: "pointer",
-                  color: "var(--text-3)", alignSelf: "flex-end" }}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  color: "var(--text-3)", alignSelf: "flex-end"
+                }}
               >
                 <X size={18} />
               </button>

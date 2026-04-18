@@ -1,6 +1,7 @@
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from "react-router-dom";
 import Home from "./Pages/Home";
 import Favourite from "./Pages/Favourite";
+import Reviews from "./Pages/Reviews";
 import MovieDetail from "./Pages/MovieDetail";
 import NotFound from "./Pages/PageNotFound";
 import Navbar from "./components/NavBar";
@@ -20,6 +21,7 @@ function App() {
           <Route path="/browse" element={<Home />} />
           <Route path="/category/:category" element={<Category />} />
           <Route path="/favourites" element={<Favourite />} />
+          <Route path="/reviews" element={<Reviews />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/MovieDetail/:id" element={<MovieDetail />} />
           <Route path="*" element={<NotFound />} />

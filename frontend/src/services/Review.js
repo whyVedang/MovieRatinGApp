@@ -1,4 +1,4 @@
-const API=import.meta.env.VITE_BACKENDAPI
+const API= import.meta.env.VITE_BACKENDAPI
 
 export const writeReview= async ({movieId,rating,content})=>{
     const res=await fetch(`${API}/movies/${movieId}/reviews`,{
@@ -33,8 +33,8 @@ export const getMovieReviews = async (movieId) => {
 }
 
 
-export const getMyReview = async (movieId) => {
-    const res = await fetch(`${API}/movies/${movieId}/reviews/me`, {
+export const getAllMyReview = async (movieId) => {
+    const res = await fetch(`${API}/reviews/me`, {
         credentials: "include"
     })
 
@@ -44,3 +44,12 @@ export const getMyReview = async (movieId) => {
 
     return res.json()
 }
+
+export const deleteReview=async({movieId,reviewId})=>{
+    const res = await fetch(`${API}/movies/${movieId}/reviews/${reviewId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+    });
+    if (!res.ok) throw new Error("Failed to delete review");
+    return res.json();
+};
