@@ -9,7 +9,7 @@ import movieRouter from "./routes/movie.router.js";
 
 import client from "./redis/redis.js"
 import {getUserAllReviews} from "./controller/review.controller.js"
-import { tokenVerify } from "./middleware/auth.middleware.js";
+import { protect } from "./middleware/auth.middleware.js";
 
 if (!process.env.JWT_SECRET || !process.env.TMDB_APIKEY) {
     console.error("FATAL ERROR: JWT_SECRET or TMDB API is not defined in .env");
@@ -29,7 +29,7 @@ app.use(cors({
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/favorite", favRouter);
 app.use("/api/v1/movies", movieRouter);
-app.use('/api/v1/reviews/me', tokenVerify, getUserAllReviews);
+app.use('/api/v1/reviews/me', protect, getUserAllReviews);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({

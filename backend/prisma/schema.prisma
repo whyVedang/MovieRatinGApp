@@ -7,12 +7,13 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  username  String    @unique
-  password  String    
-  tmdbToken String?   
-  reviews   Review[]
-  favorites Favorite[]
+  id                 String              @id @default(uuid())
+  username           String              @unique
+  email              String              @unique 
+  password           String
+  tmdbToken          String?
+  reviews            Review[]
+  favorites          Favorite[]
   role               String              @default("user")
   isVerified         Boolean             @default(false)
   refreshTokens      RefreshToken[]
@@ -25,11 +26,11 @@ model Review {
   id        String   @id @default(uuid())
   rating    Int
   content   String
-  movieId   Int      // TMDB Movie ID
+  movieId   Int // TMDB Movie ID
   userId    String
-  user      User     @relation(fields: [userId], references: [id],onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  
+
   @@unique([userId, movieId])
   @@index([userId])
   @@index([movieId])
@@ -37,9 +38,9 @@ model Review {
 
 model Favorite {
   id        String   @id @default(uuid())
-  movieId   Int      // TMDB Movie ID
+  movieId   Int // TMDB Movie ID
   userId    String
-  user      User     @relation(fields: [userId], references: [id],onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
   @@unique([userId, movieId])

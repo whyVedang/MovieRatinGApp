@@ -1,98 +1,56 @@
-import bcrypt from "bcrypt"
-import prisma from "../lib/prisma.js"
-import jwt from "jsonwebtoken"
+import * as Service from "../services/auth.service.js"
+
+const getMeta = (req) => ({
+    ip: req.ip || req.connection.remoteAddress,
+    userAgent: req.headers['user-agent'] || 'Unknown'
+});
 
 export const register = async (req, res) => {
     try {
-        const { username, password } = req.body
-        if (await prisma.user.findUnique({ where: { username } })) {
-            return res.status(400).json({ message: "username taken" })
-        }
-
-        const salt = await bcrypt.genSalt(10)
-        const hash = await bcrypt.hash(password, salt)
-
-        const user = await prisma.user.create({
-            data: {
-                username, password: hash
-            }
-        })
-
+        const user = await AuthService.register(req.body);
         res.status(201).json({
-            message: "User registered successfully",
-            user: {
-                id: user.id,
-                username: user.username
-            }
-        })
-    }
-    catch (err) {
-        console.log(err)
-        res.status(500).json({ message: "Internal server error" });
+            message: "User registered successfully. Please verify your email.",
+            user
+        });
+    } catch (err) {
+        next(err);
     }
 }
 
 export const login = async (req, res) => {
     try {
-        const { username, password } = req.body
+        const meta = getMeta(req);
+        const { accesstoken, refreshtoken } = await AuthService.login(req.body, meta);
 
-        const user = await prisma.user.findUnique({ where: { username } })
-
-        if (!(user)) {
-            return res.status(404).json({ message: "No Existing User Found" })
-        }
-        const passwordCheck = await bcrypt.compare(password, user.password);
-
-        if (!passwordCheck) return res.status(400).json({ message: "Invalid Credentials" })
-
-        const token = jwt.sign(
-            { id: user.id }, process.env.JWT_SECRET, { 'expiresIn': '2d' }
-        )
-
-        res.cookie('token', token, {
+        res.cookie('refreshtoken', refreshtoken, {
             httpOnly: true,
-            maxAge: 2 * 24 * 60 * 60 * 1000,
-            secure: false, 
-            sameSite: "lax" 
+            maxAge: 7 * 24 * 60 * 60 * 1000, 
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax"
         });
 
-        const { password: userPassword, ...userInfo } = user;
         res.status(200).json({
             message: "Login successful",
-            user: userInfo
+            accesstoken 
         });
-
-    }
-    catch (err) {
-        console.log(err)
-        res.status(500).json({ message: "Internal server error" })
+    } catch (err) {
+        next(err);
     }
 }
 
 export const logout = (req, res) => {
-    res.clearCookie('token')
-    res.status(200).json({ message: "Logged Out" })
+    try {
+        const refreshtoken = req.cookies.refreshtoken;
+        if (refreshtoken) {
+            await AuthService.logout(refreshtoken);
+        }
+        res.clearCookie('refreshtoken');
+        res.status(200).json({ message: "Logged Out" });
+    } catch (err) {
+        next(err);
+    }
 }
 
 export const ME= async (req,res)=>{
-    try{
-        const userId=req.user.id
-
-        const user=await prisma.user.findUnique({
-            where: {id:userId},
-            select: {
-                id: true,
-                username: true}
-        })
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        res.status(200).json(user);
-    }
-    catch(err){
-       console.log(err)
-        res.status(500).json({ message: "Internal server error" }) 
-    }
+    res.status(200).json({ user: req.user });
 }
