@@ -13,6 +13,12 @@ model User {
   tmdbToken String?   
   reviews   Review[]
   favorites Favorite[]
+  role               String              @default("user")
+  isVerified         Boolean             @default(false)
+  refreshTokens      RefreshToken[]
+  passwordResets     PasswordReset[]
+  emailVerifications EmailVerification[]
+  createdAt          DateTime            @default(now())
 }
 
 model Review {
@@ -21,10 +27,10 @@ model Review {
   content   String
   movieId   Int      // TMDB Movie ID
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id],onDelete: Cascade)
   createdAt DateTime @default(now())
+  
   @@unique([userId, movieId])
-
   @@index([userId])
   @@index([movieId])
 }
@@ -33,9 +39,47 @@ model Favorite {
   id        String   @id @default(uuid())
   movieId   Int      // TMDB Movie ID
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id],onDelete: Cascade)
   createdAt DateTime @default(now())
 
+  @@unique([userId, movieId])
   @@index([userId])
   @@index([movieId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  ip        String?
+  userAgent String?
+  lastUsed  DateTime @default(now())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  used      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
