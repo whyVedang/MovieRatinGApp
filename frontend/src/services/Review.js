@@ -1,20 +1,23 @@
-const API= import.meta.env.VITE_BACKENDAPI
+import { getAuthHeaders } from "./Favorite";
 
-export const writeReview= async ({movieId,rating,content})=>{
-    const res=await fetch(`${API}/movies/${movieId}/reviews`,{
-        method:"POST",
-        headers:{'Content-Type': 'application/json'},
+const API = import.meta.env.VITE_BACKENDAPI
+
+export const writeReview = async ({ movieId, rating, content }) => {
+    const res = await fetch(`${API}/movies/${movieId}/reviews`, {
+        method: "POST",
+        headers: getAuthHeaders(),
+
         body:
-        JSON.stringify({
-            movieId:Number(movieId),
-            rating:Number(rating),
-            content
-        }),
+            JSON.stringify({
+                movieId: Number(movieId),
+                rating: Number(rating),
+                content
+            }),
 
-        credentials:'include'
+        credentials: 'include'
     })
-    
-    console.log({movieId,rating,content})
+
+    console.log({ movieId, rating, content })
     if (!res.ok) {
         const error = await res.json();
         throw new Error(error.message || "Failed to add review");
@@ -35,6 +38,8 @@ export const getMovieReviews = async (movieId) => {
 
 export const getAllMyReview = async (movieId) => {
     const res = await fetch(`${API}/reviews/me`, {
+        headers: getAuthHeaders(),
+
         credentials: "include"
     })
 
@@ -45,9 +50,10 @@ export const getAllMyReview = async (movieId) => {
     return res.json()
 }
 
-export const deleteReview=async({movieId,reviewId})=>{
+export const deleteReview = async ({ movieId, reviewId }) => {
     const res = await fetch(`${API}/movies/${movieId}/reviews/${reviewId}`, {
         method: 'DELETE',
+        headers: getAuthHeaders(),
         credentials: 'include'
     });
     if (!res.ok) throw new Error("Failed to delete review");

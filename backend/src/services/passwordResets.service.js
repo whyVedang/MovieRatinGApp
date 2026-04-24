@@ -26,7 +26,7 @@ export const forgotPassword = async (email) => {
     await sendPasswordResetEmail(email, OTP)
 }
 
-export const resetPassword = async (emal, otp, newpassword) => {
+export const resetPassword = async (email, otp, newpassword) => {
     const user = await prisma.user.findUnique({ where: { email } })
     if (!user) throw new AppError("Invalid Request", 400)
 

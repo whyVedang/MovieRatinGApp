@@ -1,21 +1,24 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { MutateUserLogin } from "./mutation";
+import { MutateUserLogin, MutateUserRegister } from "./mutation"; 
 import { useNavigate, Link } from "react-router-dom";
 import { Film, Eye, EyeOff } from "lucide-react";
 
 function Auth() {
+  const [isRegistering, setIsRegistering] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const navigate = useNavigate();
 
-  const { isPending, mutate } = useMutation({
+  const loginMutation = useMutation({
     mutationKey: ["Login"],
     mutationFn: MutateUserLogin,
     onSuccess: (data) => {
-      localStorage.setItem("movie_mate_user", data.session_id);
+      localStorage.setItem("movie_mate_user", data.accesstoken);
       navigate("/browse");
     },
     onError: (err) => {
@@ -23,15 +26,30 @@ function Auth() {
     },
   });
 
-  const handleLogin = (e) => {
+  const registerMutation = useMutation({
+    mutationKey: ["Register"],
+    mutationFn: MutateUserRegister,
+    onSuccess: () => {
+      setSuccessMsg("Registration successful! Please check your email to verify your account.");
+      setIsRegistering(false);
+      setPassword("");
+    },
+    onError: (err) => setError(err.message || "Registration failed."),
+  });
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!username.trim() || !password.trim()) {
-      setError("Please enter both username and password.");
-      return;
-    }
     setError("");
-    mutate({ username, password });
+    if (isRegistering) {
+      if (!username || !email || !password) return setError("All fields required");
+      registerMutation.mutate({ username, email, password });
+    } else {
+      if (!email || !password) return setError("Email and password required");
+      loginMutation.mutate({ email, password });
+    }
   };
+
+  const isPending = loginMutation.isPending || registerMutation.isPending;
 
   const inputStyle = {
     width: "100%",
@@ -76,10 +94,10 @@ function Auth() {
             </span>
           </div>
           <h1 style={{ fontSize: "24px", fontWeight: 300, letterSpacing: "-0.02em", color: "var(--text-1)", margin: 0 }}>
-            Welcome back
+            {isRegistering ? "Create an account" : "Welcome back"}
           </h1>
           <p style={{ fontSize: "13px", color: "var(--text-3)", marginTop: "6px" }}>
-            Sign in with your account
+            {isRegistering ? "Sign up to start your vault" : "Sign in to your account"}
           </p>
         </div>
 
@@ -103,16 +121,37 @@ function Auth() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            {/* Username */}
+          {successMsg && <div style={{ color: "#34d399", fontSize: "13px", marginBottom: "16px" }}>{successMsg}</div>}
+
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            
+            {/* Username (Only when registering) */}
+            {isRegistering && (
+              <div>
+                <label style={labelStyle}>Username</label>
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Username"
+                  disabled={isPending}
+                  style={inputStyle}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border-md)")}
+                />
+              </div>
+            )}
+
+            {/* Email (Required for both Login and Register) */}
             <div>
-              <label style={labelStyle}>Username</label>
+              <label style={labelStyle}>Email</label>
               <input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Username"
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
                 disabled={isPending}
                 style={inputStyle}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
@@ -156,29 +195,26 @@ function Auth() {
               className="btn-primary"
               style={{ width: "100%", justifyContent: "center", opacity: isPending ? 0.6 : 1 }}
             >
-              {isPending ? "Signing in…" : "Sign in"}
+              {isPending ? "Processing..." : isRegistering ? "Sign Up" : "Sign In"}
             </button>
           </form>
         </div>
 
+        {/* Toggles */}
         <p style={{ textAlign: "center", marginTop: "24px", fontSize: "13px", color: "var(--text-3)" }}>
-          No account?{" "}
-          <a
-            href="https://www.themoviedb.org/signup"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: "var(--accent)", transition: "color 0.15s" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent-hover)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--accent)")}
+          {isRegistering ? "Already have an account? " : "No account? "}
+          <button 
+            onClick={() => { setIsRegistering(!isRegistering); setError(""); setSuccessMsg(""); }} 
+            style={{ color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
           >
-            Create one on CineVault
-          </a>
+            {isRegistering ? "Sign in" : "Create one"}
+          </button>
         </p>
-
+        
         <p style={{ textAlign: "center", marginTop: "12px" }}>
           <Link
             to="/browse"
-            style={{ fontSize: "13px", color: "var(--text-3)", transition: "color 0.15s" }}
+            style={{ fontSize: "13px", color: "var(--text-3)", transition: "color 0.15s", textDecoration: "none" }}
             onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
             onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-3)")}
           >

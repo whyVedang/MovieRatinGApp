@@ -1,9 +1,17 @@
 const api= import.meta.env.VITE_BACKENDAPI
 
+export const getAuthHeaders = () => {
+    const token = localStorage.getItem("movie_mate_token");
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+};
+
 export const addFavorite=async(movieId)=>{
     const res=await fetch(`${api}/favorite`,{
         method:"POST",
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ movieId }),
         credentials: 'include'
     });
@@ -14,6 +22,7 @@ export const addFavorite=async(movieId)=>{
 export const fetchFavorite=async () => {
     const res=await fetch(`${api}/favorite`,{
         method:"GET",
+        headers: getAuthHeaders(),
         credentials:"include"
     })
     if(!res.ok) throw new Error("Failed to Fetch Favorite")
@@ -24,6 +33,7 @@ export const fetchFavorite=async () => {
 export const removeFavorite=async (movieId) => {
     const res=await fetch(`${api}/favorite/${movieId}`,{
         method: 'DELETE',
+        headers: getAuthHeaders(),
         credentials: 'include'
     })
     
