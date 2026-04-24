@@ -84,15 +84,3 @@ export const MovieRecommendations = async (req, res) => {
 
     res.status(200).json(data);
 };
-
-export const MovieReviews = async (req, res) => {
-    const id = req.params.id;
-
-    if (!id) {
-        throw new AppError("Movie ID is required", 400);
-    }
-
-    const data = await tmdbService.fetchMovieReviews(id);
-
-    res.status(200).json(data);
-};

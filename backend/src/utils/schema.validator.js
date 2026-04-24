@@ -3,7 +3,15 @@ import {z} from "zod"
 export const authSchema=z.object({
     body:z.object({
         username:z.string().min(3, "Username must be at least 3 characters").max(20, "Username cant be more than 20 characters"),
+        email:z.string().email("Invalid Email Address"),
         password:z.string().min(8, "Password must be at least 8 characters")
+    })
+})
+
+export const loginSchema=z.object({
+    body:z.object({
+        email:z.string().email("Not Registered Email Address"),
+        password:z.string().min(1,"Password required")
     })
 })
 
@@ -15,8 +23,21 @@ export const favSchema=z.object({
 
 export const reviewSchema=z.object({
     body:z.object({
-        movieId: z.number().int().positive(),
-        rating:z.number().int().min(1,"Rating must be at least 1 star").max(5,"Rating can't be 5 star"),
+        movieId: z.coerce.number().int().positive(),
+        rating:z.coerce.number().int().min(1,"Rating must be at least 1 star").max(5,"Rating can't be more than 5 star"),
         content:z.string().min(5, "Review must be at least 5 characters").max(1000, "Review is too long")
+    })
+})
+
+export const forgotPasswordSchema=z.object({
+    body:z.object({
+        email:z.string().email("Not Registered Email Address")
+    })
+})
+export const resetPasswordSchema=z.object({
+    body:z.object({
+        email:z.string().email("Not Registered Email Address"),
+        otp:z.string().length(6,"OTP must be 6 digits"),
+        newpassword:z.string().min(8, "Password must be at least 8 characters")
     })
 })

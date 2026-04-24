@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchMovieCredits,
   fetchMovieDetails,
-  fetchMovieRecommendations,
-  fetchMovieReviews,
+  fetchMovieRecommendations
 } from "../services/Movieapi.js";
+
+import { getMovieReviews, writeReview } from "../services/Review.js";
 import { motion } from "framer-motion";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import {
@@ -15,7 +17,6 @@ import {
 import useFavorite from "../hooks/useFavorite";
 import Footer from "../components/Footer";
 
-/* ── Helpers ─────────────────────────────────────────────── */
 const IMG = "https://image.tmdb.org/t/p";
 
 const formatRuntime = (mins) => {
@@ -28,7 +29,6 @@ const formatDate = (s) => {
   return new Date(s).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
 };
 
-/* ── Star Rating ─────────────────────────────────────────── */
 function StarRating({ movieId }) {
   const [userRating, setUserRating] = useState(
     () => Number(localStorage.getItem(`rating_${movieId}`)) || 0
@@ -67,7 +67,6 @@ function StarRating({ movieId }) {
   );
 }
 
-/* ── Section heading ─────────────────────────────────────── */
 function SectionHeading({ icon: Icon, label }) {
   return (
     <h2 style={{
@@ -81,7 +80,6 @@ function SectionHeading({ icon: Icon, label }) {
   );
 }
 
-/* ── Info row ────────────────────────────────────────────── */
 function InfoRow({ icon: Icon, label, value }) {
   return (
     <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
@@ -96,7 +94,6 @@ function InfoRow({ icon: Icon, label, value }) {
   );
 }
 
-/* ── Genre badge ─────────────────────────────────────────── */
 function GenreBadge({ name }) {
   return (
     <span style={{
@@ -114,26 +111,43 @@ function GenreBadge({ name }) {
   );
 }
 
-/* ── Main component ──────────────────────────────────────── */
 function MovieDetail() {
   const { id } = useParams();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [details, setDetails] = useState(null);
   const [credits, setCredits] = useState(null);
   const [reviews, setReviews] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
   const [expandedReviews, setExpandedReviews] = useState([]);
+  
+  const [rating, setRating] = useState(0);
+  const [content, setContent] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const { isFav, UpdateFavorite } = useFavorite();
 
-  /* ── Single combined fetch ── */
+  // Review mutation
+  const reviewMutation = useMutation({
+    mutationFn: (reviewData) => writeReview(reviewData),
+    onSuccess: () => {
+      setRating(0);
+      setContent("");
+      setErrorMsg("");
+      getMovieReviews(id).then(setReviews).catch(console.error);
+    },
+    onError: (err) => {
+      setErrorMsg(err.message || "Failed to post review");
+    },
+  });
+
   useEffect(() => {
     setLoading(true);
     setDetails(null);
     Promise.all([
       fetchMovieDetails(id),
       fetchMovieCredits(id),
-      fetchMovieReviews(id),
+      getMovieReviews(id),
       fetchMovieRecommendations(id),
     ])
       .then(([det, cred, rev, rec]) => {
@@ -145,6 +159,26 @@ function MovieDetail() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [id]);
+
+const handleSubmit = (e) => {
+    e.preventDefault();
+    setErrorMsg("");
+
+    if (!rating) {
+      setErrorMsg("Please select a rating");
+      return;
+    }
+    if (!content.trim()) {
+      setErrorMsg("Please write a review");
+      return;
+    }
+
+    reviewMutation.mutate({
+      movieId: Number(id),
+      rating: rating,
+      content: content.trim(),
+    });
+  };
 
   const toggleReview = (rid) =>
     setExpandedReviews((prev) =>
@@ -344,18 +378,6 @@ function MovieDetail() {
                     </div>
                   </div>
                 )}
-
-                {/* User rating */}
-                <div style={{
-                  padding: "20px 24px",
-                  background: "var(--bg-surface)", border: "1px solid var(--border)",
-                  borderRadius: "var(--radius-md)",
-                }}>
-                  <p style={{ fontSize: "12px", color: "var(--text-3)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                    Your Rating
-                  </p>
-                  <StarRating movieId={id} />
-                </div>
               </div>
             </div>
 
@@ -457,6 +479,101 @@ function MovieDetail() {
                 </div>
               </section>
             )}
+
+            {/* ── Write Review ── */}
+            <section style={{ marginBottom: "56px" }}>
+              <SectionHeading icon={MessageSquare} label="Write a Review" />
+              <form onSubmit={handleSubmit} style={{
+                background: "var(--bg-surface)",
+                padding: "24px",
+                borderRadius: "var(--radius-md)",
+                border: "1px solid var(--border)",
+              }}>
+                {/* Star Selector */}
+                <div style={{ marginBottom: "20px" }}>
+                  <p style={{ fontSize: "12px", color: "var(--text-3)", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    Your Rating
+                  </p>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRating(star)}
+                        style={{ background: "none", border: "none", cursor: "pointer", padding: "2px" }}
+                      >
+                        <Star
+                          size={24}
+                          style={{
+                            fill: star <= rating ? "#facc15" : "none",
+                            color: star <= rating ? "#facc15" : "var(--text-3)",
+                            transition: "all 0.15s",
+                          }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Review Content */}
+                <div style={{ marginBottom: "16px" }}>
+                  <p style={{ fontSize: "12px", color: "var(--text-3)", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    Your Review
+                  </p>
+                  <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    placeholder="What did you think of the movie?"
+                    style={{
+                      width: "100%",
+                      background: "var(--bg-elevated)",
+                      border: "1px solid var(--border)",
+                      borderRadius: "var(--radius-sm)",
+                      color: "var(--text-1)",
+                      padding: "12px 14px",
+                      fontSize: "13px",
+                      fontFamily: "inherit",
+                      outline: "none",
+                      minHeight: "120px",
+                      resize: "vertical",
+                      boxSizing: "border-box",
+                      transition: "border-color 0.2s",
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = "var(--accent)")}
+                    onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                  />
+                </div>
+
+                {/* Error Message */}
+                {errorMsg && (
+                  <p style={{ color: "#ef4444", fontSize: "12px", marginBottom: "12px" }}>
+                    {errorMsg}
+                  </p>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={reviewMutation.isPending}
+                  style={{
+                    background: "var(--accent)",
+                    color: "#fff",
+                    padding: "11px 20px",
+                    borderRadius: "var(--radius-sm)",
+                    border: "none",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    cursor: reviewMutation.isPending ? "not-allowed" : "pointer",
+                    opacity: reviewMutation.isPending ? 0.7 : 1,
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => !reviewMutation.isPending && (e.currentTarget.style.background = "var(--accent-hover)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "var(--accent)")}
+                >
+                  {reviewMutation.isPending ? "Posting..." : "Post Review"}
+                </button>
+              </form>
+            </section>
 
             {/* ── Reviews ── */}
             {reviews?.results?.length > 0 && (

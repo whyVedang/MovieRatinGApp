@@ -1,14 +1,14 @@
 import express from 'express';
-import { writeReview,getAllReviews,getReview,deleteReview } from '../controller/review.controller.js';
-import { tokenVerify } from '../middleware/auth.middleware.js';
+import { writeReview,deleteReview, getMovieReviews, getUserAllReviews, getUserReview } from '../controller/review.controller.js';
+import { protect } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validation.middleware.js';
 import { reviewSchema } from '../utils/schema.validator.js';
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
-router.post('/', tokenVerify ,validate(reviewSchema), writeReview);
-router.delete('/:reviewId', tokenVerify , deleteReview);
-router.get('/:movieId',tokenVerify, getReview);
-router.get('/',tokenVerify, getAllReviews);
+router.get('/',getMovieReviews);
+router.post('/', protect ,validate(reviewSchema), writeReview);
+
+router.delete('/:reviewId', protect , deleteReview);
 
 export default router;

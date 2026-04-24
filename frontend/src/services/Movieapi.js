@@ -18,12 +18,6 @@ export const fetchMovieRecommendations=async (id)=>{
     else throw new Error("Failed to fetch Movie Recommendations")
 
 }
-export const fetchMovieReviews=async (id)=>{
-    const res=await fetch(`${api}/movies/${id}/reviews`)
-    if(res.ok) return res.json()
-    else throw new Error("Failed to fetch Movie Reviews")
-
-}
 export const fetchPopularMovies=async (page=1)=>{
     const res=await fetch(`${api}/movies/popular?page=${page}`);
     if(res.ok) return res.json()

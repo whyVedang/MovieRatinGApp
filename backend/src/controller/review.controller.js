@@ -1,3 +1,4 @@
+import * as tmdbService from "../services/tmdb.js";
 import prisma from "../lib/prisma.js"
 
 export const writeReview = async (req, res) => {
@@ -33,10 +34,10 @@ export const writeReview = async (req, res) => {
     }
 }
 
-export const getAllReviews = async (req, res) => {
+export const getUserAllReviews = async (req, res) => {
     try {
-        const userId = req.user.id
 
+        const userId = req.user.id
         const reviews = await prisma.review.findMany({
             where: { userId },
             include: {
@@ -58,9 +59,9 @@ export const getAllReviews = async (req, res) => {
     }
 }
 
-export const getReview = async (req, res) => {
+export const getUserReview = async (req, res) => {
     try {
-        const { movieId } = parseInt(req.params.movieId)
+        const {movieId}  = parseInt(req.params.movieId)
         const userId = req.user.id
 
         const review = await prisma.review.findFirst({
@@ -75,9 +76,28 @@ export const getReview = async (req, res) => {
     }
 }
 
+export const getMovieReviews = async (req, res) => {
+    try {
+        
+        const id = req.params.id;
+
+        if (!id) {
+            throw new AppError("Movie ID is required", 400);
+        }
+
+        const data = await tmdbService.fetchMovieReviews(id);
+
+        res.status(200).json(data);
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+}
+
 export const deleteReview = async (req, res) => {
     try {
-        const { reviewId } = req.body
+        const reviewId = req.params.reviewId
         const userId = req.user.id
 
         const review = await prisma.review.findUnique({
