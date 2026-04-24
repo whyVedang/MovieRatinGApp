@@ -74,7 +74,76 @@ export const logout = async (refreshtoken) => {
     }
 }
 
-export const refresh=()=>{}
+export const refresh=(refreshtoken,meta)=>{
+    const { ip, userAgent } = meta;
+    const hashrefresh = hashToken(refreshtoken);
 
-export const getSessions=()=>{}
-export const deleteSessions=()=>{}
+    const storedToken = await prisma.refreshToken.findUnique({
+        where: { token: hashrefresh },
+        include: { user: true }
+    });
+
+    if (!storedToken) throw new AppError("Invalid refresh token", 401);
+
+    if (new Date(storedToken.expiresAt) < new Date()) {
+        await prisma.refreshToken.delete({ where: { token: hashrefresh } });
+        throw new AppError("Refresh token expired", 401);
+    }
+
+    if (storedToken.used) {
+        await prisma.refreshToken.deleteMany({ where: { userId: storedToken.userId } });
+        console.error(`[BREACH DETECTED] Token reuse for user ${storedToken.userId}. All sessions revoked.`);
+        throw new AppError("Security alert: Token reuse detected. Please log in again.", 403);
+    }
+
+    if (storedToken.userAgent !== userAgent) {
+        await prisma.refreshToken.delete({ where: { token: hashrefresh } });
+        console.error(`[ANOMALY - HIGH] User-Agent changed from ${storedToken.userAgent} to ${userAgent}`);
+        throw new AppError("Session anomaly detected. Please log in again.", 403);
+    }
+
+    const newAccessToken = generateAccessToken(storedToken.user);
+    const newRefreshToken = generateRefreshToken();
+    const newhashrefresh = hashToken(newRefreshToken);
+
+    await prisma.$transaction([
+        prisma.refreshToken.update({
+            where: { token: hashrefresh },
+            data: { used: true }
+        }),
+        prisma.refreshToken.create({
+            data: {
+                userId: storedToken.userId,
+                token: newhashrefresh,
+                expiresAt: getExpirationDate(7),
+                ip,
+                userAgent,
+                lastUsed: new Date()
+            }
+        })
+    ]);
+
+    return { newAccessToken, newRefreshToken };
+}
+
+export const getSessions=(userId)=>{
+    const session=await prisma.refreshtoken.findMany({
+        where:{userId,used:false},
+        orderBy:{lastUsed:'desc'}
+    })
+
+    if(session.length===0) throw new AppError("No Sessions",401)
+    return session;
+}
+export const deleteSessions=(userId,sessionId)=>{
+    try{
+
+        await prisma.refreshtoken.delete({
+            where:{id:sessionId,userId}
+        })
+    }catch(err)
+    {
+        throw new AppError("No sessions found",404)
+    }
+    
+}
