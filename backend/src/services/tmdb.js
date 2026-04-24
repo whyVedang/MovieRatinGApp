@@ -1,8 +1,8 @@
 import dotenv from "dotenv"
 
-dotenv.config()
+import { TMDB_APIKEY } from "../configenv.js";
 
-const API = process.env.TMDB_APIKEY
+const API=TMDB_APIKEY
 const BASE_URL = 'https://api.themoviedb.org/3'
 
 if (!API) {

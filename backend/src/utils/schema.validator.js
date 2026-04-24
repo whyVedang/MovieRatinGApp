@@ -28,3 +28,16 @@ export const reviewSchema=z.object({
         content:z.string().min(5, "Review must be at least 5 characters").max(1000, "Review is too long")
     })
 })
+
+export const forgotPasswordSchema=z.object({
+    body:z.object({
+        email:z.string().email("Not Registered Email Address")
+    })
+})
+export const resetPasswordSchema=z.object({
+    body:z.object({
+        email:z.string().email("Not Registered Email Address"),
+        otp:z.string().length(6,"OTP must be 6 digits"),
+        newpassword:z.string().min(8, "Password must be at least 8 characters")
+    })
+})

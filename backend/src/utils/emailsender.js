@@ -11,7 +11,7 @@ const transporter=nodemailer.createTransport({
 
 
 export const sendVerificationEmail = async (email, token) => {
-  const url = `http://localhost:5173/verify-email?token=${token}`;
+  const url = `http://localhost:5173/verify?token=${token}`;
 
   await transporter.sendMail({
     from: process.env.EMAIL_USER,

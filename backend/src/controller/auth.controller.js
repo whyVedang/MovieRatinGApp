@@ -1,4 +1,5 @@
 import * as Service from "../services/auth.service.js"
+import * as PasswordService from "../services/passwordResets.service.js"
 
 const getMeta = (req) => ({
     ip: req.ip || req.connection.remoteAddress,
@@ -38,7 +39,7 @@ export const login = async (req, res,next) => {
     }
 }
 
-export const logout = (req, res,next) => {
+export const logout = async (req, res,next) => {
     try {
         const refreshtoken = req.cookies.refreshtoken;
         if (refreshtoken) {
@@ -96,6 +97,37 @@ export const deleteSessions=async(req,res,next)=>{
     }
     catch(err)
     {
+        next(err)
+    }
+}
+
+export const forgotPassword=async(req,res,next)=>{
+    try{
+        await PasswordService.forgotPassword(req.body.email)
+        res.status(200).json({message:"Password reset email sent"})
+    }
+    catch(err){
+        next(err)
+    }
+}
+export const resetPassword=async(req,res,next)=>{
+    try{
+        const {email,otp,newpassword}=req.body
+        await PasswordService.resetPassword(email,otp,newpassword)
+        res.status(200).json({message:"Password reset successfully"})
+    }
+    catch(err){
+        next(err)
+    }
+}
+
+export const verifyEmail=async(req,res,next)=>{
+    try {
+        const { token } = req.query
+        if (!token) throw new AppError("Token is required", 400)
+        await Service.verifyEmail(token)
+        res.status(200).json({ message: "Email verified successfully" })
+    } catch (err) {
         next(err)
     }
 }

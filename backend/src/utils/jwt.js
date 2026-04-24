@@ -8,7 +8,7 @@ export const generateAccessToken = (user) => {
       userId: user.id,
       role: user.role,
     },
-    JWTSECRET,
+    JWT_SECRET,
     { expiresIn: JWTEXPIRESIN },
   );
 };
