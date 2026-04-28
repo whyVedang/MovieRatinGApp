@@ -1,125 +1,91 @@
 import * as tmdbService from "../services/tmdb.js";
-import prisma from "../lib/prisma.js"
+import prisma from "../lib/prisma.js";
+import { AppError } from "../utils/AppError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-export const writeReview = async (req, res) => {
-    try {
-        const { movieId, rating, content } = req.body
-        const userId = req.user.id
+export const writeReview = asyncHandler(async (req, res) => {
+  const { movieId, rating, content } = req.body;
+  const userId = req.user.id;
 
-        const review = await prisma.review.findFirst({
-            where: { movieId, userId }
-        })
+  const review = await prisma.review.findFirst({
+    where: { movieId, userId },
+  });
 
-        if (review) {
-            return res.status(400).json({ message: "ALREADY REVIEWED" })
-        }
+  if (review) {
+    throw new AppError("ALREADY REVIEWED", 400);
+  }
 
-        const newReview = await prisma.review.create({
-            data: {
-                movieId,
-                rating,
-                content,
-                userId
-            },
-            include: {
-                user: {
-                    select: { username: true }
-                }
-            }
-        })
-        res.status(201).json(newReview)
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-}
+  const newReview = await prisma.review.create({
+    data: { movieId, rating, content, userId },
+    include: {
+      user: { select: { username: true } },
+    },
+  });
 
-export const getUserAllReviews = async (req, res) => {
-    try {
+  res.status(201).json(newReview);
+});
 
-        const userId = req.user.id
-        const reviews = await prisma.review.findMany({
-            where: { userId },
-            include: {
-                user: {
-                    select: { username: true }
-                }
-            }
-        })
+export const getUserAllReviews = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
 
-        if (!reviews.length) {
-            return res.status(404).json({ message: "No Review Yet" })
-        }
+  const reviews = await prisma.review.findMany({
+    where: { userId },
+    skip,
+    take: limit,
+    orderBy: { createdAt: "desc" },
+    include: { user: { select: { username: true } } },
+  });
 
-        res.status(200).json(reviews)
+  if (!reviews.length) {
+    throw new AppError("No Review Yet", 404);
+  }
 
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-}
+  res.status(200).json(reviews);
+});
+export const getUserReview = asyncHandler(async (req, res) => {
+  const movieId = parseInt(req.params.movieId);
+  const userId = req.user.id;
 
-export const getUserReview = async (req, res) => {
-    try {
-        const {movieId}  = parseInt(req.params.movieId)
-        const userId = req.user.id
+  const review = await prisma.review.findFirst({
+    where: { movieId, userId },
+  });
 
-        const review = await prisma.review.findFirst({
-            where: { movieId, userId }
-        })
+  res.status(200).json(review);
+});
 
-        res.status(200).json(review)
+export const getMovieReviews = asyncHandler(async (req, res) => {
+  const id = req.params.id;
 
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-}
+  if (!id) {
+    throw new AppError("Movie ID is required", 400);
+  }
 
-export const getMovieReviews = async (req, res) => {
-    try {
-        
-        const id = req.params.id;
+  const data = await tmdbService.fetchMovieReviews(id);
+  res.status(200).json(data);
+});
 
-        if (!id) {
-            throw new AppError("Movie ID is required", 400);
-        }
+export const deleteReview = asyncHandler(async (req, res) => {
+  const reviewId = req.params.reviewId;
+  const userId = req.user.id;
 
-        const data = await tmdbService.fetchMovieReviews(id);
+  const review = await prisma.review.findUnique({
+    where: { id: reviewId },
+  });
 
-        res.status(200).json(data);
+  if (!review) {
+    throw new AppError("Review not found", 404);
+  }
 
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-}
+  if (review.userId !== userId) {
+    throw new AppError("You can only delete your own reviews", 403);
+  }
 
-export const deleteReview = async (req, res) => {
-    try {
-        const reviewId = req.params.reviewId
-        const userId = req.user.id
+  await prisma.review.delete({
+    where: { id: reviewId },
+  });
 
-        const review = await prisma.review.findUnique({
-            where: { id: reviewId }
-        })
-
-        if (!review) {
-            return res.status(404).json({ message: "Review not found" })
-        }
-
-        if (review.userId !== userId) {
-            return res.status(403).json({ message: "You can only delete your own reviews" })
-        }
-
-        await prisma.review.delete({
-            where: { id: reviewId }
-        })
-
-        res.status(200).json({ message: "Review deleted successfully" })
-
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-}
+  res.status(200).json({ message: "Review deleted successfully" });
+});

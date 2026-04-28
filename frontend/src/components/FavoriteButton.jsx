@@ -10,7 +10,7 @@ export function FavoriteButton({ movieId, className = "" }) {
         e.preventDefault();
         e.stopPropagation();
 
-        const user = localStorage.getItem("movie_mate_user");
+        const user = localStorage.getItem("movie_mate_token");
         if (!user) {
             alert("Please log in to save favorites!");
             return;

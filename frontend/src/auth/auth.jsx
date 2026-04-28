@@ -18,7 +18,7 @@ function Auth() {
     mutationKey: ["Login"],
     mutationFn: MutateUserLogin,
     onSuccess: (data) => {
-      localStorage.setItem("movie_mate_user", data.accesstoken);
+      localStorage.setItem("movie_mate_token", data.accesstoken);
       navigate("/browse");
     },
     onError: (err) => {
