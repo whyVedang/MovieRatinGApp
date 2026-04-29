@@ -5,7 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const writeReview = asyncHandler(async (req, res) => {
   const { movieId, rating, content } = req.body;
-  const userId = req.user.id;
+  const userId = req.user.userId;
 
   const review = await prisma.review.findFirst({
     where: { movieId, userId },
@@ -26,7 +26,7 @@ export const writeReview = asyncHandler(async (req, res) => {
 });
 
 export const getUserAllReviews = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user.userId;
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
@@ -47,7 +47,7 @@ export const getUserAllReviews = asyncHandler(async (req, res) => {
 });
 export const getUserReview = asyncHandler(async (req, res) => {
   const movieId = parseInt(req.params.movieId);
-  const userId = req.user.id;
+  const userId = req.user.userId;
 
   const review = await prisma.review.findFirst({
     where: { movieId, userId },
@@ -69,7 +69,7 @@ export const getMovieReviews = asyncHandler(async (req, res) => {
 
 export const deleteReview = asyncHandler(async (req, res) => {
   const reviewId = req.params.reviewId;
-  const userId = req.user.id;
+  const userId = req.user.userId;
 
   const review = await prisma.review.findUnique({
     where: { id: reviewId },

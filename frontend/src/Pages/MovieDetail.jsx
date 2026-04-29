@@ -120,7 +120,7 @@ function MovieDetail() {
   const [reviews, setReviews] = useState(null);
   const [recommendations, setRecommendations] = useState(null);
   const [expandedReviews, setExpandedReviews] = useState([]);
-  
+  const [successMsg, setSuccessMsg] = useState("");
   const [rating, setRating] = useState(0);
   const [content, setContent] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -134,6 +134,7 @@ function MovieDetail() {
       setRating(0);
       setContent("");
       setErrorMsg("");
+      setSuccessMsg("Review posted successfully!!")
       getMovieReviews(id).then(setReviews).catch(console.error);
     },
     onError: (err) => {
@@ -551,6 +552,11 @@ const handleSubmit = (e) => {
                   </p>
                 )}
 
+                {successMsg && (
+                  <p style={{ color: "springgreen", fontSize: "15px", marginBottom: "15px" }}>
+                    {successMsg}
+                  </p>
+                )}
                 {/* Submit Button */}
                 <button
                   type="submit"
