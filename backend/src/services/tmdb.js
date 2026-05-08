@@ -1,9 +1,9 @@
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 
 import { TMDB_APIKEY } from "../configenv.js";
 
-const API=TMDB_APIKEY
-const BASE_URL = 'https://api.themoviedb.org/3'
+const API = TMDB_APIKEY;
+const BASE_URL = "https://api.themoviedb.org/3";
 
 if (!API) {
   throw new Error("TMDB_APIKEY is missing in .env");
@@ -14,18 +14,20 @@ const fetchFromTMDB = async (endpoint) => {
     const url = `${BASE_URL}${endpoint}`;
 
     const options = {
-      method: 'GET',
+      method: "GET",
       headers: {
-        accept: 'application/json',
-        Authorization: `Bearer ${API}`
-      }
+        accept: "application/json",
+        Authorization: `Bearer ${API}`,
+      },
     };
 
     const res = await fetch(url, options);
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      throw new Error(`TMDB Error: ${res.status} - ${errorData.status_message || res.statusText}`);
+      throw new Error(
+        `TMDB Error: ${res.status} - ${errorData.status_message || res.statusText}`,
+      );
     }
 
     return await res.json();
@@ -33,7 +35,6 @@ const fetchFromTMDB = async (endpoint) => {
     throw new Error(`${error.message}`);
   }
 };
-
 
 export const fetchTopRatedMovies = async (page = 1) => {
   return fetchFromTMDB(`/movie/top_rated?page=${page}`);
@@ -52,9 +53,7 @@ export const fetchSearchMovies = async (query, page = 1) => {
 
   const encodedQuery = encodeURIComponent(query);
 
-  return fetchFromTMDB(
-    `/search/movie?query=${encodedQuery}&page=${page}`
-  );
+  return fetchFromTMDB(`/search/movie?query=${encodedQuery}&page=${page}`);
 };
 
 export const fetchMovieDetails = async (movieId) => {
@@ -72,16 +71,11 @@ export const fetchMovieCredits = async (movieId) => {
 export const fetchMovieRecommendations = async (movieId, page = 1) => {
   if (!movieId) throw new Error("Movie ID is required");
 
-  return fetchFromTMDB(
-    `/movie/${movieId}/recommendations?page=${page}`
-  );
+  return fetchFromTMDB(`/movie/${movieId}/recommendations?page=${page}`);
 };
-
 
 export const fetchMovieReviews = async (movieId, page = 1) => {
   if (!movieId) throw new Error("Movie ID is required");
 
-  return fetchFromTMDB(
-    `/movie/${movieId}/reviews?page=${page}`
-  );
+  return fetchFromTMDB(`/movie/${movieId}/reviews?page=${page}`);
 };

@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 import { AppError } from "../utils/AppError.js";
 import { JWT_SECRET } from "../configenv.js";
 
