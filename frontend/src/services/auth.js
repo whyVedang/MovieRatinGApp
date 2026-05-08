@@ -1,11 +1,10 @@
 const api = import.meta.env.VITE_BACKENDAPI + "/auth"
 
-export const signup = async ({ username, password }) => {
+export const signup = async ({ username, email ,password }) => {
     const res = await fetch(`${api}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-        credentials: 'include'
+        body: JSON.stringify({ username, email, password }),
     });
 
     if (!res.ok) {
@@ -15,11 +14,11 @@ export const signup = async ({ username, password }) => {
     return res.json();
 }
 
-export const login = async ({ username, password }) => {
+export const login = async ({ email, password }) => {
     const res = await fetch(`${api}/login`, {
     method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
         credentials: 'include'
     });
     
@@ -37,5 +36,19 @@ export const logout = async () => {
     });
 
     if(!res.ok) throw new Error('Logout failed');
+    return res.json();
+}
+
+export const forgotPassword=async(email)=>{
+    const res=await fetch(`${api}/forgot-password`,{
+        method:'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+    })
+    
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed');
+    }
     return res.json();
 }
