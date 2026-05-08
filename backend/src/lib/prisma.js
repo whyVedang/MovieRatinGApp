@@ -3,17 +3,20 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pkg from "@prisma/client";
 const { PrismaClient } = pkg;
 import pg from "pg";
+import { DATABASE_URL, NODE_ENV } from "../configenv";
 
 dotenv.config();
 
-const connectionString = process.env.DATABASE_URL;
-const pool = new pg.Pool({ connectionString });
+
+const isProduction = NODE_ENV;
+const connectionString = DATABASE_URL;
+const pool = new pg.Pool({ connectionString , ssl: isProduction ? { rejectUnauthorized: false } : false});
 const adapter = new PrismaPg(pool);
 
 const globalForPrisma = global;
 
 export const prisma = globalForPrisma.prisma || new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+if (isProduction !== "production") globalForPrisma.prisma = prisma;
 
 export default prisma;
