@@ -1,14 +1,20 @@
 import { useMutation } from "@tanstack/react-query";
 import { MutateLogout } from "./mutation";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function LogoutButton() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const { isPending, mutate } = useMutation({
     mutationKey: ["Logout"],
     mutationFn: MutateLogout,
-    onSuccess: () => navigate("/login"),
+    onSuccess: () => 
+      {
+        logout()
+        navigate("/login")
+      },
     onError: (err) => console.error("Logout error:", err),
   });
 

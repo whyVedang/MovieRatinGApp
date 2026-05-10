@@ -1,30 +1,14 @@
 import { Link } from "react-router-dom";
 import { Star, Film, Trash2, Check, X } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient, useQueries } from "@tanstack/react-query";
 import { getAllMyReview, deleteReview } from "../services/Review";
 import { fetchMovieDetails } from "../services/Movieapi.js";
 import Footer from "../components/Footer";
 
-function ReviewCard({ review }) {
+function ReviewCard({ review, movie }) {
   const queryClient = useQueryClient();
-  const [movie, setMovie] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [isConfirming, setIsConfirming] = useState(false);
-
-  useEffect(() => {
-    const fetchMovie = async () => {
-      try {
-        const data = await fetchMovieDetails(review.movieId);
-        setMovie(data);
-      } catch (err) {
-        console.error(`Failed to fetch movie ${review.movieId}:`, err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMovie();
-  }, [review.movieId]);
 
   const deleteMutate = useMutation({
     mutationFn: deleteReview,
@@ -40,7 +24,8 @@ function ReviewCard({ review }) {
     deleteMutate.mutate({ movieId: review.movieId, reviewId: review.id });
   };
 
-  if (loading) {
+  
+  if (!movie) {
     return (
       <div style={{
         position: "relative",
@@ -48,17 +33,15 @@ function ReviewCard({ review }) {
         border: "1px solid var(--border)",
         borderRadius: "var(--radius-md)",
         overflow: "hidden",
-        height: "180px", // Fixed height for horizontal loading skeleton
+        height: "180px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
       }}>
-        <div style={{ fontSize: "14px", color: "var(--text-3)" }}>Loading...</div>
+        <div className="spinner" style={{ width: "24px", height: "24px", borderWidth: "2px" }} />
       </div>
     );
   }
-
-  if (!movie) return null;
 
   return (
     <div
@@ -69,7 +52,7 @@ function ReviewCard({ review }) {
         borderRadius: "var(--radius-md)",
         overflow: "hidden",
         transition: "border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease",
-        height: "180px", // Standardized height for the horizontal card
+        height: "180px", 
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = "var(--border-md)";
@@ -83,37 +66,33 @@ function ReviewCard({ review }) {
         if (isConfirming) setIsConfirming(false);
       }}
     >
-      {/* Changed Link to display: flex to sit the poster 
-        and the content side-by-side 
-      */}
-      <Link 
-        to={`/MovieDetail/${movie.id}`} 
-        style={{ 
-          display: "flex", 
-          height: "100%", 
-          textDecoration: "none", 
-          color: "inherit" 
+      <Link
+        to={`/MovieDetail/${movie.id}`}
+        style={{
+          display: "flex",
+          height: "100%",
+          textDecoration: "none",
+          color: "inherit"
         }}
       >
-        {/* Left Side: Poster */}
         {movie.poster_path ? (
           <img
             src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
             alt={movie.title}
-            style={{ 
-              width: "120px", 
-              minWidth: "120px", 
-              objectFit: "cover", 
-              display: "block" 
+            style={{
+              width: "120px",
+              minWidth: "120px",
+              objectFit: "cover",
+              display: "block"
             }}
           />
         ) : (
           <div style={{
-            width: "120px", 
+            width: "120px",
             minWidth: "120px",
             background: "var(--bg-elevated)",
-            display: "flex", 
-            alignItems: "center", 
+            display: "flex",
+            alignItems: "center",
             justifyContent: "center",
           }}>
             <Film size={28} style={{ color: "var(--text-3)" }} />
@@ -121,22 +100,22 @@ function ReviewCard({ review }) {
         )}
 
         {/* Right Side: Content */}
-        <div style={{ 
-          padding: "16px", 
-          display: "flex", 
-          flexDirection: "column", 
-          flex: 1, 
-          overflow: "hidden" 
+        <div style={{
+          padding: "16px",
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          overflow: "hidden"
         }}>
           <h3 style={{
-            fontSize: "18px", 
-            fontWeight: 600, 
+            fontSize: "18px",
+            fontWeight: 600,
             color: "var(--text-1)",
             margin: "0 0 8px",
-            whiteSpace: "nowrap", 
-            overflow: "hidden", 
+            whiteSpace: "nowrap",
+            overflow: "hidden",
             textOverflow: "ellipsis",
-            paddingRight: "36px" // Prevents text from hiding behind the delete button
+            paddingRight: "36px"
           }}>
             {movie.title}
           </h3>
@@ -149,13 +128,13 @@ function ReviewCard({ review }) {
           </div>
 
           <p style={{
-            fontSize: "14px", 
-            color: "var(--text-2)", 
+            fontSize: "14px",
+            color: "var(--text-2)",
             margin: 0,
             lineHeight: 1.6,
-            display: "-webkit-box", 
-            WebkitLineClamp: 3, // Allow more lines since we have horizontal space
-            WebkitBoxOrient: "vertical", 
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
             overflow: "hidden",
           }}>
             "{review.content}"
@@ -163,7 +142,6 @@ function ReviewCard({ review }) {
         </div>
       </Link>
 
-      {/* Delete button (Unchanged positioning, just fits nicely in top right) */}
       <div style={{
         position: "absolute", top: "12px", right: "12px",
         display: "flex", gap: "4px", zIndex: 10,
@@ -218,15 +196,29 @@ function ReviewCard({ review }) {
 }
 
 function ReviewsPage() {
-  const { data: reviews = [], isLoading } = useQuery({
+  const { data: reviews = [], isLoading: isReviewsLoading } = useQuery({
     queryKey: ["myReviews"],
     queryFn: getAllMyReview,
   });
 
+  const movieQueries = useQueries({
+    queries: reviews.map((rev) => ({
+      queryKey: ["movie", rev.movieId],
+      queryFn: () => fetchMovieDetails(rev.movieId),
+      staleTime: 1000 * 60 * 10,
+    })),
+  });
+
+  const movieMap = movieQueries.reduce((acc, query) => {
+    if (query.data) acc[query.data.id] = query.data;
+    return acc;
+  }, {});
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-base)", paddingTop: "56px" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "48px 32px 80px" }}>
-
+        
+        {/* Header */}
         <div style={{ marginBottom: "48px" }}>
           <p className="section-label" style={{ marginBottom: "10px" }}>Your Voice</p>
           <h1 style={{
@@ -237,13 +229,15 @@ function ReviewsPage() {
           </h1>
         </div>
 
-        {isLoading && (
+        {/* Global Loading Spinner for the reviews list */}
+        {isReviewsLoading && (
           <div style={{ display: "flex", justifyContent: "center", padding: "80px 0" }}>
             <div className="spinner" />
           </div>
         )}
 
-        {!isLoading && reviews.length === 0 && (
+        {/* Empty State */}
+        {!isReviewsLoading && reviews.length === 0 && (
           <div style={{
             padding: "64px 48px", textAlign: "center",
             background: "var(--bg-surface)", border: "1px solid var(--border)",
@@ -262,15 +256,19 @@ function ReviewsPage() {
           </div>
         )}
 
-        {!isLoading && reviews.length > 0 && (
+        {/* Reviews Grid */}
+        {!isReviewsLoading && reviews.length > 0 && (
           <div style={{
             display: "grid",
-            // Adjusted grid to accommodate wider, horizontal cards
-            gridTemplateColumns: "repeat(auto-fill, minmax(450px, 1fr))", 
+            gridTemplateColumns: "repeat(auto-fill, minmax(450px, 1fr))",
             gap: "24px",
           }}>
             {reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
+              <ReviewCard 
+                key={review.id} 
+                review={review} 
+                movie={movieMap[review.movieId]} 
+                />
             ))}
           </div>
         )}

@@ -2,48 +2,31 @@ import { Link, useSearchParams } from "react-router-dom";
 import MovieCard from "../components/MovieCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
-import {
-  fetchSearchMovies,
-  fetchPopularMovies,
-  fetchTopRatedMovies,
-  fetchUpcomingMovies,
-} from "../services/Movieapi.js";
+import { fetchSearchMovies, fetchPopularMovies, fetchTopRatedMovies, fetchUpcomingMovies } from "../services/Movieapi.js";
 import Footer from "../components/Footer";
 
 function MovieRow({ title, movies, rowRef, onScrollLeft, onScrollRight, categoryPath }) {
   return (
-    <div style={{ marginBottom: "56px" }}>
-      {/* Row header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-        <h2 style={{ fontSize: "16px", fontWeight: 600, color: "var(--text-1)", letterSpacing: "-0.01em", margin: 0 }}>
+    <div className="mb-14">
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-[16px] font-semibold text-[var(--text-1)] tracking-tight m-0">
           {title}
         </h2>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <Link
-            to={categoryPath}
-            style={{ fontSize: "12px", color: "var(--text-3)", transition: "color 0.15s" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-3)")}
-          >
+        <div className="flex items-center gap-3">
+          <Link to={categoryPath} className="text-xs text-[var(--text-3)] transition-colors hover:text-[var(--accent)]">
             View all →
           </Link>
-          <button onClick={onScrollLeft} style={scrollBtnStyle}>
+          <button onClick={onScrollLeft} className="w-7 h-7 rounded-full border border-[var(--border-md)] bg-transparent text-[var(--text-2)] cursor-pointer flex items-center justify-center transition-colors hover:border-[var(--accent)] hover:text-[var(--text-1)]">
             <ChevronLeft size={14} />
           </button>
-          <button onClick={onScrollRight} style={scrollBtnStyle}>
+          <button onClick={onScrollRight} className="w-7 h-7 rounded-full border border-[var(--border-md)] bg-transparent text-[var(--text-2)] cursor-pointer flex items-center justify-center transition-colors hover:border-[var(--accent)] hover:text-[var(--text-1)]">
             <ChevronRight size={14} />
           </button>
         </div>
       </div>
-
-      {/* Horizontal scroll row */}
-      <div
-        ref={rowRef}
-        className="scrollbar-hide"
-        style={{ display: "flex", gap: "14px", overflowX: "auto" }}
-      >
+      <div ref={rowRef} className="flex gap-3.5 overflow-x-auto scrollbar-hide scroll-smooth">
         {movies.map((m) => (
-          <div key={m.id} style={{ flexShrink: 0, width: "160px" }}>
+          <div key={m.id} className="shrink-0 w-[160px]">
             <MovieCard movie={m} />
           </div>
         ))}
@@ -51,17 +34,6 @@ function MovieRow({ title, movies, rowRef, onScrollLeft, onScrollRight, category
     </div>
   );
 }
-
-const scrollBtnStyle = {
-  width: "28px", height: "28px",
-  borderRadius: "50%",
-  border: "1px solid var(--border-md)",
-  background: "transparent",
-  color: "var(--text-2)",
-  cursor: "pointer",
-  display: "flex", alignItems: "center", justifyContent: "center",
-  transition: "border-color 0.15s, color 0.15s",
-};
 
 function Home() {
   const [searchParams] = useSearchParams();
@@ -78,17 +50,11 @@ function Home() {
   const popularRef = useRef(null);
   const upcomingRef = useRef(null);
 
-  const scroll = (ref, dir) =>
-    ref.current?.scrollBy({ left: dir === "left" ? -340 : 340, behavior: "smooth" });
+  const scroll = (ref, dir) => ref.current?.scrollBy({ left: dir === "left" ? -340 : 340, behavior: "smooth" });
 
-  /* ── Initial load — all three rows in one shot ── */
   useEffect(() => {
     setLoadingRows(true);
-    Promise.all([
-      fetchTopRatedMovies(1),
-      fetchPopularMovies(1),
-      fetchUpcomingMovies(1),
-    ])
+    Promise.all([fetchTopRatedMovies(1), fetchPopularMovies(1), fetchUpcomingMovies(1)])
       .then(([tr, pop, up]) => {
         setTopRated(tr.results || []);
         setPopular(pop.results || []);
@@ -97,7 +63,6 @@ function Home() {
       .finally(() => setLoadingRows(false));
   }, []);
 
-  /* ── Search ── */
   useEffect(() => {
     if (!searchTerm) { setSearchResults([]); return; }
     const t = setTimeout(async () => {
@@ -115,79 +80,48 @@ function Home() {
   }, [searchTerm]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-base)", paddingTop: "56px" }}>
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 32px" }}>
+    <div className="min-h-screen bg-[var(--bg-base)] pt-14">
+      <div className="max-w-[1280px] mx-auto px-8">
 
-        {/* ── Hero text (no search) ── */}
+        {/* Hero text (no search) */}
         {!searchTerm && !loadingRows && (
-          <div style={{ padding: "56px 0 48px" }}>
-            <p className="section-label" style={{ marginBottom: "12px" }}>Film Discovery</p>
-            <h1 style={{
-              fontSize: "clamp(36px, 5vw, 72px)", fontWeight: 300,
-              letterSpacing: "-0.03em", lineHeight: 1.05,
-              color: "var(--text-1)", margin: "0 0 16px",
-            }}>
+          <div className="py-14 pb-12">
+            <p className="section-label mb-3">Film Discovery</p>
+            <h1 className="text-[clamp(36px,5vw,72px)] font-light tracking-tight leading-[1.05] text-[var(--text-1)] m-0 mb-4">
               Discover Movies
             </h1>
-            <p style={{ fontSize: "14px", color: "var(--text-3)", maxWidth: "340px", margin: 0 }}>
+            <p className="text-sm text-[var(--text-3)] max-w-[340px] m-0">
               Your destination for exploring the best of cinema.
             </p>
           </div>
         )}
 
-        {/* ── Search results ── */}
+        {/* Search results */}
         {searchTerm && (
-          <div style={{ padding: "48px 0" }}>
-            <h2 style={{ color: "var(--text-1)", fontWeight: 500, marginBottom: "28px", fontSize: "18px" }}>
-              Results for "{searchTerm}"
-            </h2>
+          <div className="py-12">
+            <h2 className="text-[var(--text-1)] font-medium mb-7 text-lg">Results for "{searchTerm}"</h2>
             {loadingSearch ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "48px 0" }}>
-                <div className="spinner" />
-              </div>
+              <div className="flex justify-center py-12"><div className="spinner" /></div>
             ) : searchResults.length > 0 ? (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))", gap: "16px" }}>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(155px,1fr))] gap-4">
                 {searchResults.map((m) => <MovieCard key={m.id} movie={m} />)}
               </div>
             ) : (
-              <p style={{ color: "var(--text-3)" }}>No results found.</p>
+              <p className="text-[var(--text-3)]">No results found.</p>
             )}
           </div>
         )}
 
-        {/* ── Movie rows ── */}
+        {/* Movie rows */}
         {!searchTerm && (
           <>
             {loadingRows ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: "96px 0" }}>
-                <div className="spinner" />
-              </div>
+              <div className="flex justify-center py-24"><div className="spinner" /></div>
             ) : (
-              <div style={{ paddingBottom: "64px" }}>
-                <MovieRow
-                  title="Top Rated"
-                  movies={topRated}
-                  rowRef={topRatedRef}
-                  onScrollLeft={() => scroll(topRatedRef, "left")}
-                  onScrollRight={() => scroll(topRatedRef, "right")}
-                  categoryPath="/category/top_rated"
-                />
-                <MovieRow
-                  title="Popular"
-                  movies={popular}
-                  rowRef={popularRef}
-                  onScrollLeft={() => scroll(popularRef, "left")}
-                  onScrollRight={() => scroll(popularRef, "right")}
-                  categoryPath="/category/popular"
-                />
-                <MovieRow
-                  title="Upcoming"
-                  movies={upcoming}
-                  rowRef={upcomingRef}
-                  onScrollLeft={() => scroll(upcomingRef, "left")}
-                  onScrollRight={() => scroll(upcomingRef, "right")}
-                  categoryPath="/category/upcoming"
-                />
+              <div className="pb-16">
+                <MovieRow title="Top Rated" movies={topRated} rowRef={topRatedRef} onScrollLeft={() => scroll(topRatedRef, "left")} onScrollRight={() => scroll(topRatedRef, "right")} categoryPath="/category/top_rated" />
+                <MovieRow title="Popular" movies={popular} rowRef={popularRef} onScrollLeft={() => scroll(popularRef, "left")} onScrollRight={() => scroll(popularRef, "right")} categoryPath="/category/popular" />
+                <MovieRow title="Upcoming" movies={upcoming} rowRef={upcomingRef} onScrollLeft={() => scroll(upcomingRef, "left")} onScrollRight={() => scroll(upcomingRef, "right")} categoryPath="/category/upcoming" />
               </div>
             )}
           </>

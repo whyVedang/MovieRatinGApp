@@ -1,30 +1,14 @@
 import { Link } from "react-router-dom";
 import { Star, Film, Heart } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useQueries } from "@tanstack/react-query";
 import useFavorite from "../hooks/useFavorite";
 import { fetchMovieDetails } from "../services/Movieapi.js";
 import Footer from "../components/Footer";
 
-function FavouriteCard({ favorite }) {
+function FavouriteCard({ favorite, movie }) {
   const { UpdateFavorite } = useFavorite();
-  const [movie, setMovie] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMovie = async () => {
-      try {
-        const data = await fetchMovieDetails(favorite.movieId);
-        setMovie(data);
-      } catch (err) {
-        console.error(`Failed to fetch movie ${favorite.movieId}:`, err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchMovie();
-  }, [favorite.movieId]);
-
-  if (loading) {
+  if (!movie) {
     return (
       <div style={{
         position: "relative",
@@ -37,25 +21,13 @@ function FavouriteCard({ favorite }) {
         alignItems: "center",
         justifyContent: "center",
       }}>
-        <div style={{ fontSize: "12px", color: "var(--text-3)" }}>Loading...</div>
+        <div className="spinner" style={{ width: "24px", height: "24px", borderWidth: "2px" }} />
       </div>
     );
   }
 
-  if (!movie) return null;
-
   return (
-    <div style={{
-      position: "relative",
-      background: "var(--bg-surface)",
-      border: "1px solid var(--border)",
-      borderRadius: "var(--radius-md)",
-      overflow: "hidden",
-      transition: "border-color 0.2s ease, transform 0.2s ease",
-    }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-md)"; e.currentTarget.style.transform = "translateY(-4px)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.transform = "translateY(0)"; }}
-    >
+    <div className="fav-card">
       <Link to={`/MovieDetail/${movie.id}`}>
         {movie.poster_path ? (
           <img
@@ -77,7 +49,8 @@ function FavouriteCard({ favorite }) {
             fontSize: "13px", fontWeight: 500, color: "var(--text-1)",
             margin: "0 0 4px",
             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-          }}>
+            paddingRight: "24px"
+                      }}>
             {movie.title}
           </h3>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -85,27 +58,20 @@ function FavouriteCard({ favorite }) {
             <span style={{ fontSize: "12px", color: "var(--text-3)" }}>
               {movie.vote_average?.toFixed(1) || "N/A"}
             </span>
-            <span style={{ color: "var(--border-md)" }}>·</span>
+            <span style={{ color: "var(--border-md)" }}>&bull;</span>
             <span style={{ fontSize: "12px", color: "var(--text-3)" }}>
               {movie.release_date ? new Date(movie.release_date).getFullYear() : "N/A"}
             </span>
           </div>
         </div>
       </Link>
-
-      {/* Remove button */}
       <button
-        onClick={() => UpdateFavorite({ id: favorite.movieId })}
-        style={{
-          position: "absolute", top: "8px", right: "8px",
-          width: "30px", height: "30px", borderRadius: "50%",
-          background: "rgba(239,68,68,0.2)",
-          border: "none", cursor: "pointer",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "background 0.2s",
+        className="fav-remove-btn"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          UpdateFavorite({ id: favorite.movieId });
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.4)")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(239,68,68,0.2)")}
         title="Remove from favourites"
       >
         <Heart size={13} style={{ fill: "#ef4444", color: "#ef4444" }} />
@@ -115,12 +81,25 @@ function FavouriteCard({ favorite }) {
 }
 
 function FavouritesPage() {
-  const { favorites, isLoading } = useFavorite();
+  const { favorites, isLoading: isFavsLoading } = useFavorite();
+
+  const movieQueries = useQueries({
+    queries: favorites.map((fav) => ({
+      queryKey: ["movie", fav.movieId],
+      queryFn: () => fetchMovieDetails(fav.movieId),
+      staleTime: 1000 * 60 * 10,
+    })),
+  });
+
+  const movieMap = movieQueries.reduce((acc, query) => {
+    if (query.data) acc[query.data.id] = query.data;
+    return acc;
+  }, {});
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-base)", paddingTop: "56px" }}>
       <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "48px 32px 80px" }}>
-
+        
         <div style={{ marginBottom: "48px" }}>
           <p className="section-label" style={{ marginBottom: "10px" }}>Your collection</p>
           <h1 style={{
@@ -131,13 +110,13 @@ function FavouritesPage() {
           </h1>
         </div>
 
-        {isLoading && (
+        {isFavsLoading && (
           <div style={{ display: "flex", justifyContent: "center", padding: "80px 0" }}>
             <div className="spinner" />
           </div>
         )}
 
-        {!isLoading && favorites.length === 0 && (
+        {!isFavsLoading && favorites.length === 0 && (
           <div style={{
             padding: "64px 48px", textAlign: "center",
             background: "var(--bg-surface)", border: "1px solid var(--border)",
@@ -156,17 +135,23 @@ function FavouritesPage() {
           </div>
         )}
 
-        {!isLoading && favorites.length > 0 && (
+        {/* Grid */}
+        {!isFavsLoading && favorites.length > 0 && (
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))",
             gap: "16px",
           }}>
             {favorites.map((fav) => (
-              <FavouriteCard key={fav.id} favorite={fav} />
+              <FavouriteCard 
+                key={fav.id || fav.movieId} 
+                favorite={fav} 
+                movie={movieMap[fav.movieId]}
+              />
             ))}
           </div>
         )}
+
       </div>
       <Footer />
     </div>
