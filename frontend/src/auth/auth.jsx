@@ -1,24 +1,28 @@
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
-import { MutateUserLogin, MutateUserRegister } from "./mutation"; 
+import { useState, useRef } from "react";
+import { MutateUserLogin, MutateUserRegister } from "./mutation";
 import { useNavigate, Link } from "react-router-dom";
 import { Film, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 function Auth() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
   const [isRegistering, setIsRegistering] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  const navigate = useNavigate();
+
+  const usernameRef = useRef(null);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
 
   const loginMutation = useMutation({
     mutationKey: ["Login"],
     mutationFn: MutateUserLogin,
     onSuccess: (data) => {
-      localStorage.setItem("movie_mate_token", data.accesstoken);
+      login(data.accesstoken);
       navigate("/browse");
     },
     onError: (err) => {
@@ -30,9 +34,9 @@ function Auth() {
     mutationKey: ["Register"],
     mutationFn: MutateUserRegister,
     onSuccess: () => {
-      setSuccessMsg("Registration successful! Please check your email to verify your account.");
+      setSuccessMsg("Registration successful! Please check your email.");
       setIsRegistering(false);
-      setPassword("");
+      if (passwordRef.current) passwordRef.current.value = "";
     },
     onError: (err) => setError(err.message || "Registration failed."),
   });
@@ -40,6 +44,11 @@ function Auth() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
+
+    const email = emailRef.current?.value || "";
+    const password = passwordRef.current?.value || "";
+    const username = usernameRef.current?.value || "";
+
     if (isRegistering) {
       if (!username || !email || !password) return setError("All fields required");
       registerMutation.mutate({ username, email, password });
@@ -51,138 +60,58 @@ function Auth() {
 
   const isPending = loginMutation.isPending || registerMutation.isPending;
 
-  const inputStyle = {
-    width: "100%",
-    padding: "11px 14px",
-    background: "var(--bg-elevated)",
-    border: "1px solid var(--border-md)",
-    borderRadius: "var(--radius-sm)",
-    color: "var(--text-1)",
-    fontSize: "14px",
-    outline: "none",
-    transition: "border-color 0.2s",
-    boxSizing: "border-box",
-    fontFamily: "inherit",
-  };
-
-  const labelStyle = {
-    display: "block",
-    fontSize: "12px",
-    color: "var(--text-3)",
-    marginBottom: "8px",
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
-  };
-
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "var(--bg-base)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "40px 24px",
-    }}>
-      <div style={{ width: "100%", maxWidth: "380px" }}>
+    <div className="min-h-screen bg-[var(--bg-base)] flex items-center justify-center p-6">
+      <div className="w-full max-w-[380px]">
+        {/* ... [Brand Header Code] ... */}
 
-        {/* Brand */}
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
-            <Film size={16} style={{ color: "var(--accent)" }} />
-            <span style={{ fontSize: "12px", letterSpacing: "0.22em", textTransform: "uppercase", color: "var(--text-3)" }}>
-              CineVault
-            </span>
-          </div>
-          <h1 style={{ fontSize: "24px", fontWeight: 300, letterSpacing: "-0.02em", color: "var(--text-1)", margin: 0 }}>
-            {isRegistering ? "Create an account" : "Welcome back"}
-          </h1>
-          <p style={{ fontSize: "13px", color: "var(--text-3)", marginTop: "6px" }}>
-            {isRegistering ? "Sign up to start your vault" : "Sign in to your account"}
-          </p>
-        </div>
-
-        {/* Card */}
-        <div style={{
-          background: "var(--bg-surface)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--radius-lg)",
-          padding: "32px",
-        }}>
-          {/* Error */}
+        <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl p-8">
           {error && (
-            <div style={{
-              padding: "12px 14px", marginBottom: "20px",
-              background: "rgba(239,68,68,0.08)",
-              border: "1px solid rgba(239,68,68,0.2)",
-              borderRadius: "var(--radius-sm)",
-              fontSize: "13px", color: "#f87171",
-            }}>
+            <div className="p-3 mb-5 bg-red-500/10 border border-red-500/20 rounded-md text-[13px] text-red-400">
               {error}
             </div>
           )}
+          {successMsg && <div className="text-emerald-400 text-[13px] mb-4">{successMsg}</div>}
 
-          {successMsg && <div style={{ color: "#34d399", fontSize: "13px", marginBottom: "16px" }}>{successMsg}</div>}
-
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            
-            {/* Username (Only when registering) */}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {isRegistering && (
               <div>
-                <label style={labelStyle}>Username</label>
+                <label className="block text-[12px] text-[var(--text-3)] mb-2 tracking-widest uppercase">Username</label>
                 <input
-                  id="username"
+                  ref={usernameRef}
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
                   placeholder="Username"
                   disabled={isPending}
-                  style={inputStyle}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border-md)")}
+                  className="w-full p-3 bg-[var(--bg-elevated)] border border-[var(--border-md)] rounded-md text-[var(--text-1)] text-[14px] outline-none focus:border-[var(--accent)] transition-colors"
                 />
               </div>
             )}
 
-            {/* Email (Required for both Login and Register) */}
             <div>
-              <label style={labelStyle}>Email</label>
+              <label className="block text-[12px] text-[var(--text-3)] mb-2 tracking-widest uppercase">Email</label>
               <input
-                id="email"
+                ref={emailRef}
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
                 disabled={isPending}
-                style={inputStyle}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
-                onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border-md)")}
+                className="w-full p-3 bg-[var(--bg-elevated)] border border-[var(--border-md)] rounded-md text-[var(--text-1)] text-[14px] outline-none focus:border-[var(--accent)] transition-colors"
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label style={labelStyle}>Password</label>
-              <div style={{ position: "relative" }}>
+              <label className="block text-[12px] text-[var(--text-3)] mb-2 tracking-widest uppercase">Password</label>
+              <div className="relative">
                 <input
-                  id="password"
+                  ref={passwordRef}
                   type={showPw ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
                   disabled={isPending}
-                  style={{ ...inputStyle, paddingRight: "44px" }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = "var(--accent)")}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = "var(--border-md)")}
+                  className="w-full p-3 pr-11 bg-[var(--bg-elevated)] border border-[var(--border-md)] rounded-md text-[var(--text-1)] text-[14px] outline-none focus:border-[var(--accent)] transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw((p) => !p)}
-                  style={{
-                    position: "absolute", right: "12px", top: "50%",
-                    transform: "translateY(-50%)",
-                    background: "none", border: "none", cursor: "pointer",
-                    color: "var(--text-3)", padding: 0,
-                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-transparent border-none text-[var(--text-3)] cursor-pointer"
                 >
                   {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
@@ -192,25 +121,23 @@ function Auth() {
             <button
               type="submit"
               disabled={isPending}
-              className="btn-primary"
-              style={{ width: "100%", justifyContent: "center", opacity: isPending ? 0.6 : 1 }}
+              className={`btn-primary w-full justify-center ${isPending ? 'opacity-60' : ''}`}
             >
               {isPending ? "Processing..." : isRegistering ? "Sign Up" : "Sign In"}
             </button>
           </form>
         </div>
 
-        {/* Toggles */}
         <p style={{ textAlign: "center", marginTop: "24px", fontSize: "13px", color: "var(--text-3)" }}>
           {isRegistering ? "Already have an account? " : "No account? "}
-          <button 
-            onClick={() => { setIsRegistering(!isRegistering); setError(""); setSuccessMsg(""); }} 
+          <button
+            onClick={() => { setIsRegistering(!isRegistering); setError(""); setSuccessMsg(""); }}
             style={{ color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
           >
             {isRegistering ? "Sign in" : "Create one"}
           </button>
         </p>
-        
+
         <p style={{ textAlign: "center", marginTop: "12px" }}>
           <Link
             to="/browse"

@@ -1,17 +1,18 @@
 import { motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import useFavorite from "../hooks/useFavorite";
+import { useAuth } from "../context/AuthContext";
 
 export function FavoriteButton({ movieId, className = "" }) {
     const { isFav, UpdateFavorite } = useFavorite();
+    const {isAuthenticated}=useAuth()
     const isFavorite = isFav(movieId);
 
     const handleToggle = (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const user = localStorage.getItem("movie_mate_token");
-        if (!user) {
+        if (!isAuthenticated) { 
             alert("Please log in to save favorites!");
             return;
         }

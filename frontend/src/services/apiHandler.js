@@ -16,18 +16,20 @@ export const apiHandler = async (endpoint, options = {}) => {
   });
 
   if (response.status === 401) {
+    if (!token) {
+      throw new Error("Unauthorized: Please log in.");
+    }
     try {
-      // REFRESH
-      const refreshRes = await fetch(`${BASE_URL}/auth/refresh`, {
+      const refreshRes = await fetch(`${API}/auth/refresh`, {
         method: "POST",
         credentials: "include",
       });
-
+      
       if (!refreshRes.ok) throw new Error("Session expired");
-
       const { accesstoken } = await refreshRes.json();
-
+      
       localStorage.setItem("movie_mate_token", accesstoken);
+      window.dispatchEvent(new Event("auth-token-changed")); 
 
       header["Authorization"] = `Bearer ${accesstoken}`;
       response = await fetch(`${API}${endpoint}`, {
@@ -36,7 +38,11 @@ export const apiHandler = async (endpoint, options = {}) => {
       });
     } catch (err) {
       localStorage.removeItem("movie_mate_token");
-      window.location.href = "/login";
+      window.dispatchEvent(new Event("auth-token-changed"));
+      
+      setTimeout(() => {
+          window.location.href = "/login";
+      }, 100);
       throw new Error("Session expired. Please log in again.");
     }
   }
