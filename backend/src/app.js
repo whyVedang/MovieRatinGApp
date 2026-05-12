@@ -10,18 +10,20 @@ import movieRouter from "./routes/movie.router.js";
 import client from "./redis/redis.js";
 import { getUserAllReviews } from "./controller/review.controller.js";
 import { protect } from "./middleware/auth.middleware.js";
+import { CLIENT_URL, JWT_SECRET, TMDB_APIKEY } from "./configenv.js";
 
-if (!process.env.JWT_SECRET || !process.env.TMDB_APIKEY) {
+if (!JWT_SECRET || !TMDB_APIKEY) {
   console.error("FATAL ERROR: JWT_SECRET or TMDB API is not defined in .env");
-  process.exit(1); // Kill server
+  process.exit(1); 
 }
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
 
-const allowedOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(",")
+const CLIENT_URL=CLIENT_URL;
+const allowedOrigins = CLIENT_URL
+  ? CLIENT_URL.split(",").map(url => url.trim())
   : ["http://localhost:5173"];
 
 app.use(

@@ -52,3 +52,15 @@ export const forgotPassword=async(email)=>{
     }
     return res.json();
 }
+
+export const verifyEmailToken = async (token) => {
+    const res = await fetch(`${api}/verify?token=${token}`, {
+        method: 'GET',
+    });
+    
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Verification failed');
+    }
+    return res.json();
+};

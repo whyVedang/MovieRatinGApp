@@ -12,17 +12,16 @@ import Footer from "../components/Footer";
 
 const CATEGORY_MAP = {
   top_rated: { title: "Top Rated", fetchFn: fetchTopRatedMovies },
-  popular:   { title: "Popular",   fetchFn: fetchPopularMovies },
-  upcoming:  { title: "Upcoming",  fetchFn: fetchUpcomingMovies },
+  popular: { title: "Popular", fetchFn: fetchPopularMovies },
+  upcoming: { title: "Upcoming", fetchFn: fetchUpcomingMovies },
 };
 
 function Category() {
   const { category } = useParams();
   const navigate = useNavigate();
-
   const { title = "Movies", fetchFn = fetchPopularMovies } =
     CATEGORY_MAP[category] || {};
-
+  
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,65 +52,52 @@ function Category() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-base)", paddingTop: "56px" }}>
-      <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "40px 32px 80px" }}>
-
-        {/* Breadcrumb */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "48px" }}>
+    // Replaced inline styles with Tailwind utility classes
+    <div className="min-h-screen bg-[var(--bg-base)] pt-14">
+      <div className="max-w-[1280px] mx-auto px-8 py-10 pb-20">
+        
+        {/* Breadcrumb - Removed JS hovers, used Tailwind group/hover */}
+        <div className="flex items-center gap-3 mb-12">
           <button
             onClick={() => navigate(-1)}
-            style={{
-              display: "flex", alignItems: "center", gap: "6px",
-              background: "none", border: "none", cursor: "pointer",
-              color: "var(--text-3)", fontSize: "13px",
-              transition: "color 0.15s",
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-1)")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-3)")}
+            className="flex items-center gap-1.5 bg-transparent border-none cursor-pointer text-[var(--text-3)] text-[13px] transition-colors duration-150 hover:text-[var(--text-1)]"
           >
             <ChevronLeft size={14} /> Back
           </button>
-          <span style={{ color: "var(--border-md)", fontSize: "13px" }}>/</span>
-          <span style={{ fontSize: "13px", color: "var(--text-2)" }}>{title}</span>
+          <span className="text-[var(--border-md)] text-[13px]">/</span>
+          <span className="text-[13px] text-[var(--text-2)]">{title}</span>
         </div>
 
         {/* Page heading */}
-        <div style={{ marginBottom: "40px" }}>
-          <p className="section-label" style={{ marginBottom: "10px" }}>Browse</p>
-          <h1 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 300, letterSpacing: "-0.02em", color: "var(--text-1)", margin: 0 }}>
+        <div className="mb-10">
+          <p className="section-label mb-2.5">Browse</p>
+          <h1 className="text-[clamp(28px,4vw,48px)] font-light tracking-[-0.02em] text-[var(--text-1)] m-0">
             {title}
           </h1>
         </div>
 
-        {/* Loading */}
+        {/* Loading State */}
         {loading && (
-          <div style={{ display: "flex", justifyContent: "center", padding: "80px 0" }}>
+          <div className="flex justify-center py-20">
             <div className="spinner" />
           </div>
         )}
 
-        {/* Error */}
+        {/* Error State */}
         {error && !loading && (
-          <div style={{ textAlign: "center", padding: "80px 0" }}>
-            <p style={{ color: "var(--text-3)", marginBottom: "16px" }}>{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="btn-ghost"
-            >
+          <div className="text-center py-20">
+            <p className="text-[var(--text-3)] mb-4">{error}</p>
+            <button onClick={() => window.location.reload()} className="btn-ghost">
               Try again
             </button>
           </div>
         )}
 
-        {/* Grid */}
+        {/* Grid & Pagination */}
         {!loading && !error && (
           <>
             {movies.length > 0 ? (
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(155px, 1fr))",
-                gap: "16px",
-              }}>
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(155px,1fr))] gap-4">
                 {movies.map((m) => (
                   <div key={m.id} className="movie-card-wrap">
                     <MovieCard movie={m} />
@@ -119,11 +105,10 @@ function Category() {
                 ))}
               </div>
             ) : (
-              <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-3)" }}>
+              <div className="text-center py-20 text-[var(--text-3)]">
                 No movies found.
               </div>
             )}
-
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

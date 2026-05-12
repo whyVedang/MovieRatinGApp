@@ -14,6 +14,7 @@ import Category from "./Pages/Category";
 import Auth from "./auth/auth";
 import LandingPage from "./Pages/LandingPage";
 import ProtectedRoute from "./components/ProtectedRoutes";
+import VerifyEmail from "./Pages/VerifyEmail"
 
 function App() {
   const router = createBrowserRouter(
@@ -21,7 +22,7 @@ function App() {
       <>
         {/* Landing page — standalone, no navbar */}
         <Route path="/" element={<LandingPage />} />
-
+        <Route path="/verify" element={<VerifyEmail />} />
         {/* App shell with navbar */}
         <Route element={<Navbar />}>
           <Route path="/browse" element={<Home />} />
