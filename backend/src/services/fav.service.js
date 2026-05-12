@@ -32,10 +32,7 @@ export const getFavoriteService = async (userId,cursor,limit) => {
     const nextItem = favorites.pop();
     nextCursor = nextItem.id;
   }
-
-  if (!favorites || favorites.length === 0) {
-    throw new AppError("No Favorites Yet", 404);
-  }
+  
     return { favorites, nextCursor };
 };
 

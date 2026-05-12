@@ -39,10 +39,6 @@ export const getUserAllReviews = asyncHandler(async (req, res) => {
     include: { user: { select: { username: true } } },
   });
 
-  if (!reviews.length) {
-    throw new AppError("No Review Yet", 404);
-  }
-
   res.status(200).json(reviews);
 });
 export const getUserReview = asyncHandler(async (req, res) => {

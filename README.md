@@ -1,7 +1,5 @@
 # 🎬 CineVault
 
-# CineVault
-
 > A modern React-based platform for movie enthusiasts to discover, search, and rate films.
 
 ---

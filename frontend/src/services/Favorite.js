@@ -9,10 +9,12 @@ export const addFavorite = async (movieId) => {
 };
 
 export const fetchFavorite = async () => {
-  return await apiHandler(`/favorite`, {
+  const response= await apiHandler(`/favorite`, {
     method: "GET",
     credentials: "include",
   });
+
+  return response?.favorites || []
 };
 
 export const removeFavorite = async (movieId) => {
